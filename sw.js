@@ -1,6 +1,6 @@
 // Service worker : met l'app en cache pour qu'elle marche hors ligne.
 // Pense à incrémenter VERSION à chaque modification des fichiers ci-dessous.
-const VERSION = 'v4';
+const VERSION = 'v5';
 const CACHE = `routine-${VERSION}`;
 
 const ASSETS = [
@@ -29,7 +29,9 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)));
+  event.waitUntil(
+    caches.open(CACHE).then((cache) => cache.addAll(ASSETS.map((url) => new Request(url, { cache: 'no-cache' }))))
+  );
   self.skipWaiting();
 });
 
@@ -66,8 +68,10 @@ self.addEventListener('fetch', (event) => {
   }
   if (url.origin !== self.location.origin) return;
 
+  // cache: 'no-cache' : on revalide toujours auprès du serveur (GitHub Pages
+  // laisse sinon le navigateur garder une ancienne version jusqu'à 10 min).
   event.respondWith(
-    fetch(request)
+    fetch(request, { cache: 'no-cache' })
       .then((response) => {
         const copy = response.clone();
         caches.open(CACHE).then((cache) => cache.put(request, copy));
