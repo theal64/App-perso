@@ -1,5 +1,5 @@
 // Ciel vivant de l'accueil : il suit l'heure réelle (nuit, aube, matin, après-midi,
-// heure dorée, crépuscule). Un arc du jour porte le soleil (7h → 19h) ou la lune.
+// heure dorée, crépuscule). Un arc de 24 h (minuit → minuit) porte le soleil ou la lune.
 // Couleurs interpolées à la minute ; le mouvement passe par transform / opacity.
 
 import { cssStars } from './sky.js';
@@ -53,10 +53,10 @@ function skyAt(h) {
   };
 }
 
-// Astre : soleil de 7h à 19h, lune le reste du temps ; t = position sur l'arc (0 → 1).
+// L'arc représente les 24 h : minuit à gauche, minuit suivant à droite (t = h / 24).
+// L'astre est le soleil de 7h à 19h, la lune le reste du temps.
 function bodyAt(h) {
-  if (h >= 7 && h < 19) return { kind: 'sun', t: (h - 7) / 12 };
-  return { kind: 'moon', t: ((h - 19 + 24) % 24) / 12 };
+  return { kind: h >= 7 && h < 19 ? 'sun' : 'moon', t: h / 24 };
 }
 
 export function createHomeSky(el) {
@@ -81,7 +81,7 @@ export function createHomeSky(el) {
     const W = innerWidth, H = innerHeight;
     arc.setAttribute('viewBox', `0 0 ${W} ${H}`);
     const y0 = H * 0.44, top = H * 0.06;
-    const d = `M ${-W * 0.04} ${y0} Q ${W / 2} ${top} ${W * 1.04} ${y0}`;
+    const d = `M ${W * 0.06} ${y0} Q ${W / 2} ${top} ${W * 0.94} ${y0}`; // extrémités dans l'écran
     path.setAttribute('d', d);
     done.setAttribute('d', d);
   }
