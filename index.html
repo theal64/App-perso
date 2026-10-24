@@ -16,14 +16,20 @@
   <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-  <header class="top">
-    <p class="date" id="today-date"></p>
-    <p class="message" id="today-message"></p>
-  </header>
+  <div id="home" class="home">
+    <header class="home-top">
+      <div>
+        <h1 class="hello">Bonjour Théo</h1>
+        <p class="date" id="home-date"></p>
+      </div>
+      <p class="streak-chip" id="home-streak"></p>
+    </header>
 
-  <main id="view" class="view" aria-live="polite"></main>
+    <section id="featured" class="featured-slot"></section>
+    <section id="grid" class="grid"></section>
+  </div>
 
-  <nav class="tabbar" id="tabbar" aria-label="Onglets"></nav>
+  <div id="screen" class="screen" hidden></div>
 
   <script type="module" src="./js/app.js"></script>
 </body>

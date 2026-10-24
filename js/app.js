@@ -1,78 +1,94 @@
-// Point d'entrée : en-tête du jour, barre d'onglets, routage par #hash.
+// Point d'entrée : accueil (carte vedette + grille) et ouverture des sections.
 
-import { tabs } from './tabs/index.js';
+import { sections } from './tabs/index.js';
+import { getStreak } from './tabs/matin.js';
 import { dateKey, formatLongDate } from './date.js';
+import { openCard, closeCard } from './transition.js';
+import { setThemeColor } from './theme.js';
 
-const MESSAGES = [
-  'Un pas après l’autre.',
-  'Doucement, mais sûrement.',
-  'Respire, tu as le temps.',
-  'Aujourd’hui compte.',
-  'Petit à petit, l’oiseau fait son nid.',
-  'Commence simple.',
-  'Sois présent à ce que tu fais.',
-];
+const home = document.getElementById('home');
+const screen = document.getElementById('screen');
+const featuredSlot = document.getElementById('featured');
+const grid = document.getElementById('grid');
 
-const view = document.getElementById('view');
-const tabbar = document.getElementById('tabbar');
+let current = null; // section ouverte
+let cleanup = null;
+let busy = false;
 let renderedDay = dateKey();
 
-function renderHeader() {
+function defaultCard(el, section) {
+  el.classList.toggle('is-soon', !!section.soon);
+  el.innerHTML = `
+    <div class="tile-top">
+      <span class="tile-icon" aria-hidden="true">${section.icon}</span>
+      ${section.soon ? '<span class="badge">Bientôt</span>' : ''}
+    </div>
+    <p class="tile-title">${section.title}</p>
+  `;
+}
+
+function makeTile(section, featured) {
+  const el = document.createElement('button');
+  el.type = 'button';
+  el.dataset.id = section.id;
+  el.className = featured ? 'tile feat' : 'tile tile-small';
+  if (featured) section.renderFeatured(el);
+  else if (section.renderCard) section.renderCard(el);
+  else defaultCard(el, section);
+  el.addEventListener('click', () => openSection(section, el));
+  return el;
+}
+
+function renderHome() {
   const now = new Date();
-  document.getElementById('today-date').textContent = formatLongDate(now);
-  // Un message par jour, stable dans la journée.
-  const dayIndex = Math.floor(now.setHours(0, 0, 0, 0) / 86400000);
-  document.getElementById('today-message').textContent = MESSAGES[dayIndex % MESSAGES.length];
+  renderedDay = dateKey(now);
+  document.getElementById('home-date').textContent = formatLongDate(now);
+
+  const streak = getStreak();
+  document.getElementById('home-streak').innerHTML =
+    `<strong>${streak}</strong><span>${streak > 1 ? 'jours' : 'jour'} d’affilée</span>`;
+
+  const featured = sections.find((s) => s.isFeatured?.(now));
+  featuredSlot.replaceChildren(...(featured ? [makeTile(featured, true)] : []));
+  grid.replaceChildren(...sections.filter((s) => s !== featured).map((s) => makeTile(s, false)));
 }
 
-function renderTabbar() {
-  tabbar.innerHTML = tabs
-    .map(
-      (tab) => `
-      <a href="#${tab.id}" class="tab ${tab.soon ? 'is-soon' : ''}" data-id="${tab.id}">
-        <span class="tab-icon" aria-hidden="true">${tab.icon}</span>
-        <span class="tab-label">${tab.label}</span>
-        ${tab.soon ? '<span class="tab-soon">Bientôt</span>' : ''}
-      </a>`
-    )
-    .join('');
+async function openSection(section, tile) {
+  if (busy || current) return;
+  busy = true;
+  current = section;
+  screen.className = 'screen';
+  cleanup = section.open(screen, { close: closeSection }) || null;
+  await openCard(tile, screen, home);
+  busy = false;
 }
 
-function currentTab() {
-  const id = location.hash.slice(1);
-  return tabs.find((t) => t.id === id) || tabs[0];
+async function closeSection() {
+  if (busy || !current) return;
+  busy = true;
+  const id = current.id;
+  renderHome(); // la carte reflète la progression avant que l'écran s'y referme
+  await closeCard(home.querySelector(`[data-id="${id}"]`), screen, home);
+  cleanup?.();
+  cleanup = null;
+  current = null;
+  screen.replaceChildren();
+  setThemeColor(null);
+  busy = false;
 }
 
-function renderView() {
-  const tab = currentTab();
-  tabbar.querySelectorAll('.tab').forEach((el) => {
-    const active = el.dataset.id === tab.id;
-    el.classList.toggle('is-active', active);
-    el.toggleAttribute('aria-current', active);
-  });
-  view.innerHTML = '';
-  tab.render(view);
+// Rafraîchit l'accueil (carte vedette à 11 h, nouveau jour après minuit).
+function refresh() {
+  if (!current) renderHome();
+  else if (dateKey() !== renderedDay) closeSection();
 }
 
-function renderAll() {
-  renderedDay = dateKey();
-  renderHeader();
-  renderView();
-}
-
-// Si l'app reste ouverte (ou revient au premier plan) après minuit, on repart à zéro.
-function refreshIfNewDay() {
-  if (dateKey() !== renderedDay) renderAll();
-}
-
-window.addEventListener('hashchange', renderView);
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') refreshIfNewDay();
+  if (document.visibilityState === 'visible') refresh();
 });
-setInterval(refreshIfNewDay, 60 * 1000);
+setInterval(refresh, 60 * 1000);
 
-renderTabbar();
-renderAll();
+renderHome();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

@@ -2,10 +2,10 @@ import { renderSoon } from './soon.js';
 
 export default {
   id: 'journee',
-  label: 'Journée',
+  title: 'Journée',
   icon: '☀︎',
   soon: true,
-  render(container) {
-    renderSoon(container, 'Journée', 'Cet onglet arrive bientôt.');
+  open(screen, { close }) {
+    renderSoon(screen, { title: 'Journée', text: 'Cette section arrive bientôt.', close });
   },
 };

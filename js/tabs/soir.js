@@ -2,10 +2,10 @@ import { renderSoon } from './soon.js';
 
 export default {
   id: 'soir',
-  label: 'Soir',
+  title: 'Bilan du soir',
   icon: '☾',
   soon: true,
-  render(container) {
-    renderSoon(container, 'Soir', 'Cet onglet arrive bientôt.');
+  open(screen, { close }) {
+    renderSoon(screen, { title: 'Bilan du soir', text: 'Un petit bilan pour clore la journée.', close });
   },
 };
