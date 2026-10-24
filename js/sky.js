@@ -173,7 +173,7 @@ export function createSky(el) {
         { transform: at(1), opacity: 0 },
       ],
       { duration: 900 + Math.random() * 600, easing: 'cubic-bezier(.3,.1,.6,1)' }
-    ).finished.then(() => m.remove());
+    ).finished.catch(() => {}).then(() => m.remove());
   };
   meteorTimer = setTimeout(spawnMeteor, 1800);
 

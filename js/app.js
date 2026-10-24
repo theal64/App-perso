@@ -57,6 +57,7 @@ function renderHome() {
 async function openSection(section, tile) {
   if (busy || current) return;
   busy = true;
+  await section.beforeOpen?.(tile);
   current = section;
   screen.className = 'screen';
   cleanup = section.open(screen, { close: closeSection }) || null;

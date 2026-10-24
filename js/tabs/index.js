@@ -5,6 +5,7 @@
 //   isFeatured?(now) → bool       veut-elle la grande carte vedette maintenant ?
 //   renderFeatured?(el)           contenu de la carte vedette
 //   renderCard?(el)               contenu de la petite carte (sinon carte par défaut)
+//   beforeOpen?(tile) → Promise   animation de la carte touchée, avant l'ouverture
 //   open(screen, { close })       remplit l'écran plein ; peut renvoyer une fonction de nettoyage
 //
 // La première section dont isFeatured(now) est vrai prend la carte vedette :

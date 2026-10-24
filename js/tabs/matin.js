@@ -13,6 +13,7 @@ import {
   previewStart, savePrefs, stepCue, stepDur,
 } from './matin-plan.js';
 import { FIGURES, FIGURE_PERIOD } from './matin-figures.js';
+import { SUN_ICON, riseIcon, setIcon } from './matin-icon.js';
 
 const HISTORY_KEY = 'matin:history';
 const RUN_KEY = 'matin:run';
@@ -85,9 +86,26 @@ const streakText = (n) => `${n} ${n > 1 ? 'jours' : 'jour'} d’affilée`;
 
 // ---------- Cartes d'accueil ----------
 
+// Revenu de l'écran de la routine : le soleil de l'icône se recouche sur l'accueil.
+let iconSetsOnReturn = false;
+
+function playIconReturn(el, complete) {
+  if (!iconSetsOnReturn) return;
+  iconSetsOnReturn = false;
+  if (complete) return; // routine faite : le soleil reste levé
+  el.classList.add('ico-on');
+  setTimeout(() => setIcon(el), 520); // après la fermeture de l'écran
+}
+
+function featuredSubtitle(done, total) {
+  if (done) return `${done} / ${total} étapes · on continue`;
+  return getPrefs().mode === 'poste' ? `6h05 → 7h00 · ${total} étapes` : `Jour off · ${total} étapes`;
+}
+
 function renderFeatured(el) {
   const { done, total } = getProgress();
   const f = stageOf(done, total);
+  el.setAttribute('aria-label', 'Ouvrir la routine du matin');
   el.innerHTML = `
     <div class="feat-sky" style="background:${skyGradient(f)}">
       <div class="feat-stars" style="opacity:${starsAt(f)}">
@@ -96,28 +114,35 @@ function renderFeatured(el) {
       </div>
       <div class="feat-glow" style="opacity:${glowAt(f)}"></div>
     </div>
+    <div class="feat-horizon" aria-hidden="true"></div>
     <div class="feat-body">
-      <p class="feat-kicker">Ce matin</p>
-      <h2 class="feat-title">Routine matinale</h2>
-      <div class="feat-bar"><span style="width:${(done / total) * 100}%"></span></div>
-      <div class="feat-row">
-        <span class="feat-progress">${done} / ${total}</span>
-        <span class="feat-cta">${done ? 'Continuer' : 'Commencer'}</span>
+      <span class="feat-eyebrow">Mode matin</span>
+      <div class="feat-tile">
+        ${SUN_ICON}
+        <span class="feat-txt">
+          <span class="t1">Routine du matin</span>
+          <span class="t2">${featuredSubtitle(done, total)}</span>
+        </span>
+        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
       </div>
+      <div class="feat-bar"><span style="width:${(done / total) * 100}%"></span></div>
     </div>
   `;
+  playIconReturn(el, false);
 }
 
 function renderCard(el) {
   const { done, total, complete } = getProgress();
   el.classList.toggle('is-done', complete);
+  el.classList.toggle('ico-on', complete);
   el.innerHTML = `
-    <div class="tile-top"><span class="tile-icon" aria-hidden="true">${complete ? '✓' : '◐'}</span></div>
+    <div class="tile-top">${SUN_ICON}</div>
     <div>
-      <p class="tile-title">${complete ? 'Routine faite' : 'Routine matinale'}</p>
+      <p class="tile-title">${complete ? 'Routine faite' : 'Routine du matin'}</p>
       <p class="tile-sub">${complete ? streakText(getStreak()) : `${done} / ${total}`}</p>
     </div>
   `;
+  playIconReturn(el, complete);
 }
 
 // ---------- Déroulé minuté ----------
@@ -425,7 +450,8 @@ function open(screen, { close }) {
         { opacity: [1, 0], transform: ['none', 'translateY(-42px) scale(.96)'], filter: ['blur(0px)', 'blur(8px)'] },
         { duration: 520, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' }
       )
-      .finished.then(() => ghost.remove());
+      .finished.catch(() => {})
+      .then(() => ghost.remove());
     return true;
   }
 
@@ -743,6 +769,9 @@ function open(screen, { close }) {
   };
   document.addEventListener('visibilitychange', onVisible);
 
+  // Au retour, l'accueil est redessiné avant que l'écran se referme : l'icône s'y recouchera.
+  iconSetsOnReturn = true;
+
   // Ouverture : le ciel reprend directement à l'état de la progression.
   updateSky({ instant: true });
   renderBar();
@@ -776,5 +805,6 @@ export default {
   isFeatured: (now) => now.getHours() < FEATURED_UNTIL_HOUR && !getProgress().complete,
   renderFeatured,
   renderCard,
+  beforeOpen: riseIcon, // le soleil de l'icône se lève avant l'ouverture
   open,
 };
