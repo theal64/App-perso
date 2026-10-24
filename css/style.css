@@ -89,46 +89,140 @@ button { font: inherit; color: inherit; }
 .featured-slot:empty { display: none; }
 
 /* Carte vedette : aperçu du ciel nocturne */
-.feat {
-  position: relative; height: 220px; overflow: hidden; isolation: isolate;
-  border-radius: 24px; color: #fff; background: #060a1a;
-  box-shadow: 0 14px 30px -14px rgba(16, 20, 52, .6);
-}
+.feat { position: relative; height: 236px; border-radius: 24px; color: #fff; background: none; }
 .feat-sky { position: absolute; inset: 0; z-index: -1; }
 .feat-stars, .feat-stars span { position: absolute; inset: 0; }
 .feat-glow {
   position: absolute; left: -20%; right: -20%; bottom: -30%; height: 80%;
   background: radial-gradient(ellipse 50% 60% at 50% 100%, rgba(255, 170, 120, .85), rgba(255, 120, 130, .3) 45%, transparent 75%);
 }
-/* Horizon de planète avec son liseré rouge (design "Icône Routine matin") */
-.feat-horizon {
-  position: absolute; left: 50%; top: 62%; width: 260%; aspect-ratio: 1; transform: translateX(-50%);
-  border-radius: 50%; background: #03050d; pointer-events: none;
-  box-shadow: 0 -2px 0 rgba(255, 96, 80, .75), 0 -24px 80px rgba(255, 70, 50, .28), 0 -2px 0 2px rgba(140, 195, 255, .2);
-}
-.feat-body {
-  position: absolute; left: 0; right: 0; bottom: 0;
-  padding: 16px; display: flex; flex-direction: column; gap: 12px;
+/* ---------- Carte vedette "première lumière" ---------- */
+.aur-inner {
+  position: absolute; inset: 0; border-radius: 24px; overflow: hidden; isolation: isolate;
+  background: #060a1a; box-shadow: 0 20px 44px -18px rgba(16, 20, 52, .75);
+  transition: transform .6s var(--ease-ios); will-change: transform;
   font-family: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
 }
-.feat-eyebrow {
-  padding-left: 4px; color: #8fcaff;
-  font: 500 12px/1 "IBM Plex Mono", ui-monospace, Menlo, monospace; letter-spacing: .16em; text-transform: uppercase;
+.is-touch .aur-inner { transition: transform .12s ease-out; }
+
+.aur-stars, .aur-stars span { position: absolute; inset: 0; }
+.aur-stars .drift { inset: -12%; animation: drift 46s linear infinite alternate; }
+@keyframes drift { to { transform: translate(-7%, 4%); } }
+
+/* Aurore : trois nappes de couleur qui ondulent lentement */
+.aurora { position: absolute; inset: 0; }
+.aurora i { position: absolute; width: 75%; height: 70%; border-radius: 50%; will-change: transform; }
+.aurora i:nth-child(1) {
+  left: -15%; top: -20%; background: radial-gradient(closest-side, rgba(90, 210, 255, .3), transparent);
+  animation: aur-a 13s ease-in-out infinite alternate;
 }
-.feat-tile {
-  display: flex; align-items: center; gap: 16px; padding: 14px 16px 14px 14px; border-radius: 22px;
-  background: rgba(6, 16, 44, .5); border: 1px solid rgba(234, 244, 255, .14);
-  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+.aurora i:nth-child(2) {
+  right: -20%; top: -5%; background: radial-gradient(closest-side, rgba(150, 110, 255, .3), transparent);
+  animation: aur-b 17s ease-in-out infinite alternate;
 }
-.feat-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-.feat-txt .t1 { font: 700 20px/1.1 "Bricolage Grotesque", system-ui, sans-serif; letter-spacing: -.01em; color: #eaf4ff; }
-.feat-txt .t2 { font: 400 12px/1.2 "IBM Plex Mono", ui-monospace, Menlo, monospace; color: #a9bfe0; }
-.feat .chev { flex: none; width: 20px; height: 20px; stroke: #a9bfe0; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.feat-bar { height: 3px; margin: 0 6px; border-radius: 2px; background: rgba(234, 244, 255, .14); overflow: hidden; }
-.feat-bar span { display: block; height: 100%; background: #8fcaff; border-radius: 2px; }
+.aurora i:nth-child(3) {
+  left: 15%; top: 20%; background: radial-gradient(closest-side, rgba(255, 110, 150, .16), transparent);
+  animation: aur-c 15s ease-in-out infinite alternate;
+}
+@keyframes aur-a { to { transform: translate(35%, 25%) scale(1.25) rotate(20deg); } }
+@keyframes aur-b { to { transform: translate(-30%, 15%) scale(.85) rotate(-15deg); } }
+@keyframes aur-c { to { transform: translate(-20%, -20%) scale(1.3); } }
+
+/* Lueur d'aube (allumage) */
+.aur-dawn {
+  position: absolute; inset: 0; opacity: 0; pointer-events: none;
+  background: radial-gradient(120% 75% at 50% 100%, rgba(255, 176, 120, .9), rgba(255, 110, 140, .35) 42%, transparent 72%);
+}
+
+/* Horizon de planète, liseré rouge qui respire, éclair d'horizon */
+.aur-horizon {
+  position: absolute; left: 50%; top: 89%; width: 280%; aspect-ratio: 1; transform: translateX(-50%);
+  border-radius: 50%; background: #03050d; pointer-events: none;
+  box-shadow: 0 -2px 0 rgba(255, 96, 80, .8), 0 -2px 0 2px rgba(140, 195, 255, .2);
+}
+.aur-horizon::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  box-shadow: 0 -26px 90px rgba(255, 80, 60, .45);
+  animation: breathe 4.5s ease-in-out infinite alternate;
+}
+@keyframes breathe { from { opacity: .35; } to { opacity: 1; } }
+.aur-flare {
+  position: absolute; left: 50%; top: 0; width: 36%; height: 3px; margin: -2px 0 0 -18%; border-radius: 3px;
+  background: linear-gradient(90deg, transparent, #ffe2b8 28%, #fff 50%, #ffe2b8 72%, transparent);
+  box-shadow: 0 0 22px 6px rgba(255, 190, 120, .7);
+  opacity: 0; transform: scaleX(0);
+}
+
+/* Texte */
+.aur-body { position: absolute; left: 20px; right: 118px; bottom: 46px; display: flex; flex-direction: column; gap: 8px; }
+.aur-eyebrow {
+  color: #8fcaff; font: 500 11px/1 "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  letter-spacing: .14em; text-transform: uppercase;
+}
+.aur-title { margin: 0; font-size: 31px; font-weight: 800; line-height: .98; letter-spacing: -.03em; color: #fff; }
+.aur-title .w { display: inline-block; white-space: nowrap; }
+.aur-title .ch { display: inline-block; }
+.aur-sub { color: #a9bfe0; font: 400 12px/1.2 "IBM Plex Mono", ui-monospace, Menlo, monospace; }
+
+/* Orbe-soleil : pulsations, anneau de progression, orbite */
+.aur-orb {
+  position: absolute; right: 18px; bottom: 50px; width: 88px; height: 88px; display: grid; place-items: center;
+  --ico-off: #a9bfe0; --ico-on: #ffd9a0; --ico-hz: #eaf4ff;
+}
+.aur-orb .ibox {
+  position: absolute; inset: 13px; width: auto; height: auto; border-radius: 50%;
+  background: radial-gradient(circle at 50% 75%, rgba(255, 170, 110, .28), rgba(6, 16, 44, .65) 70%);
+  border: 1px solid rgba(234, 244, 255, .2);
+}
+.aur-orb .ico { width: 34px; height: 34px; }
+.aur-ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transform: rotate(-90deg); }
+.aur-ring circle { fill: none; }
+.aur-ring .trk { stroke: rgba(234, 244, 255, .14); stroke-width: 2; }
+.aur-ring .prg {
+  stroke: #8fcaff; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1;
+  filter: drop-shadow(0 0 4px #8fcaff);
+}
+.aur-ring .orbit {
+  stroke: rgba(234, 244, 255, .4); stroke-width: 1; stroke-dasharray: 1 6;
+  transform-box: view-box; transform-origin: 50px 50px; animation: spin 24s linear infinite;
+}
+.pulse {
+  position: absolute; inset: 8px; border-radius: 50%; opacity: 0;
+  border: 1.5px solid rgba(255, 214, 166, .65);
+  animation: pulse 2.8s cubic-bezier(.2, .6, .3, 1) infinite;
+}
+.pulse.p2 { animation-delay: 1.4s; }
+@keyframes pulse { 0% { transform: scale(.9); opacity: .75; } 100% { transform: scale(1.85); opacity: 0; } }
+.aur-shock {
+  position: absolute; left: 50%; top: 50%; width: 760px; height: 760px; border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none;
+  background: radial-gradient(circle, transparent 54%, rgba(255, 214, 166, .55) 61%, rgba(143, 202, 255, .3) 65%, transparent 70%);
+}
+.aur-p {
+  position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%;
+  background: #fff7e8; box-shadow: 0 0 8px 2px rgba(255, 200, 140, .8); pointer-events: none;
+}
+
+/* Reflet qui suit le doigt */
+.aur-glare {
+  position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .4s;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, .22), transparent 48%);
+}
+.is-touch .aur-glare { opacity: 1; }
+
+/* Liseré de lumière qui fait le tour de la carte */
+.aur-border {
+  position: absolute; inset: 0; border-radius: 24px; padding: 1.5px; overflow: hidden; pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+.aur-border::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 200%; aspect-ratio: 1; margin: -100% 0 0 -100%;
+  background: conic-gradient(from 0deg, transparent 0 60%, rgba(143, 202, 255, .9) 70%, #fff 74%, rgba(255, 150, 120, .9) 78%, transparent 88%);
+  animation: spin 6s linear infinite;
+}
 
 /* Icône soleil sur l'horizon : couchée par défaut, levée avec .ico-on */
-.feat { --ico-off: #a9bfe0; --ico-on: #8fcaff; --ico-hz: #eaf4ff; }
 .tile-small { --ico-off: var(--muted); --ico-on: var(--accent); --ico-hz: var(--text); }
 .ibox {
   position: relative; flex: none; width: 56px; height: 56px; border-radius: 17px; display: grid; place-items: center;
@@ -152,7 +246,6 @@ button { font: inherit; color: inherit; }
 .ico-on .ico .ray { stroke-dashoffset: 0; opacity: 1; }
 .ico-on .ico .red { opacity: 1; }
 .ico-on .ico .sung { transform: none; }
-.ico-on .feat-txt .t1 { color: #fff; }
 /* Coucher du soleil : transitions seulement pendant ce moment-là */
 .ico-setting .ico .sung { transition: transform .36s cubic-bezier(.5, 0, .75, 0); }
 .ico-setting .ico .ray { transition: stroke-dashoffset .18s ease-in, opacity .18s ease-in; }
@@ -609,7 +702,9 @@ button { font: inherit; color: inherit; }
   .twinkle-a, .twinkle-b { animation: none; }
   .tile { transition: none; }
   .r-kin .c, .r-cta::after, .sky-rays i, .r-ring.is-ending, .is-paused .r-cd,
-  .check input:checked + .box, .fig * { animation: none; }
+  .check input:checked + .box, .fig *, .aur-stars .drift, .aurora i, .aur-horizon::before,
+  .aur-ring .orbit, .pulse, .aur-border::before { animation: none; }
+  .pulse { display: none; }
   .r-sheet { transition: opacity .2s ease; transform: none; opacity: 0; pointer-events: none; }
   .sheet-open .r-sheet { opacity: 1; pointer-events: auto; }
 }

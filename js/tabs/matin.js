@@ -97,37 +97,153 @@ function playIconReturn(el, complete) {
   setTimeout(() => setIcon(el), 520); // après la fermeture de l'écran
 }
 
-function featuredSubtitle(done, total) {
-  if (done) return `${done} / ${total} étapes · on continue`;
-  return getPrefs().mode === 'poste' ? `6h05 → 7h00 · ${total} étapes` : `Jour off · ${total} étapes`;
+// ---------- Carte vedette "première lumière" ----------
+// Au repos : étoiles qui dérivent, aurore, horizon qui respire, liseré qui tourne,
+// orbe-soleil qui pulse avec l'anneau de progression.
+// Au toucher : la carte s'incline vers le doigt, puis s'allume (éclair d'horizon,
+// lueur d'aube, onde de choc, particules, lettres en vague) avant de s'ouvrir.
+
+let featIntroPlayed = false;
+
+const letters = (text) => {
+  let i = 0;
+  return text
+    .split(' ')
+    .map((word) => `<span class="w">${[...word].map((ch) => `<span class="ch" style="--i:${i++}">${ch}</span>`).join('')}</span>`)
+    .join(' ');
+};
+
+function attachTilt(card) {
+  if (reduceMotion()) return;
+  const inner = card.querySelector('.aur-inner');
+  const tilt = (e) => {
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    inner.style.transform = `perspective(700px) rotateX(${(-y * 9).toFixed(2)}deg) rotateY(${(x * 11).toFixed(2)}deg)`;
+    card.style.setProperty('--gx', `${((x + 0.5) * 100).toFixed(1)}%`);
+    card.style.setProperty('--gy', `${((y + 0.5) * 100).toFixed(1)}%`);
+    card.classList.add('is-touch');
+  };
+  const release = () => {
+    inner.style.transform = '';
+    card.classList.remove('is-touch');
+  };
+  card.addEventListener('pointerdown', tilt);
+  card.addEventListener('pointermove', (e) => card.classList.contains('is-touch') && tilt(e));
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach((type) => card.addEventListener(type, release));
+}
+
+// Séquence d'allumage (~820 ms), avant l'ouverture de l'écran.
+function ignite(card) {
+  const sunRise = riseIcon(card);
+  if (reduceMotion()) return sunRise;
+  const q = (sel) => card.querySelector(sel);
+  const smooth = 'cubic-bezier(.2,.7,.2,1)';
+
+  q('.aur-flare').animate(
+    { transform: ['scaleX(0)', 'scaleX(1)', 'scaleX(1.15)'], opacity: [0, 1, 0] },
+    { duration: 760, delay: 60, easing: smooth }
+  );
+  q('.aur-dawn').animate({ opacity: [0, 0.95, 0.6] }, { duration: 820, easing: 'ease-out', fill: 'forwards' });
+  q('.aur-stars').animate(
+    { transform: ['scale(1)', 'scale(1.22)'], opacity: [1, 0.25] },
+    { duration: 820, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }
+  );
+  q('.aur-shock').animate(
+    { transform: ['translate(-50%,-50%) scale(.05)', 'translate(-50%,-50%) scale(1)'], opacity: [0.9, 0] },
+    { duration: 820, delay: 90, easing: 'cubic-bezier(.1,.6,.3,1)' }
+  );
+  q('.aur-orb').animate(
+    { transform: ['scale(1)', 'scale(.86)', 'scale(1.14)', 'scale(1)'] },
+    { duration: 620, easing: 'cubic-bezier(.3,.7,.3,1)' }
+  );
+  card.querySelectorAll('.aur-title .ch').forEach((c, i) =>
+    c.animate(
+      { transform: ['none', 'translateY(-7px)', 'none'], color: ['#fff', '#ffe2b8', '#fff'] },
+      { duration: 520, delay: 140 + i * 24, easing: 'cubic-bezier(.3,.7,.3,1)' }
+    )
+  );
+
+  // Particules de lumière qui jaillissent de l'orbe.
+  const orb = q('.aur-orb');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('span');
+    p.className = 'aur-p';
+    orb.append(p);
+    const a = -Math.PI * (0.05 + Math.random() * 0.9) - (Math.random() < 0.3 ? Math.PI * 0.5 : 0);
+    const d = 50 + Math.random() * 110;
+    p.animate(
+      {
+        transform: ['translate(0,0) scale(1)', `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d}px) scale(.3)`],
+        opacity: [1, 0],
+      },
+      { duration: 600 + Math.random() * 400, delay: 120 + Math.random() * 120, easing: 'cubic-bezier(.15,.7,.3,1)', fill: 'backwards' }
+    ).finished.catch(() => {}).then(() => p.remove());
+  }
+
+  return Promise.all([sunRise, new Promise((resolve) => setTimeout(resolve, 820))]);
 }
 
 function renderFeatured(el) {
   const { done, total } = getProgress();
   const f = stageOf(done, total);
+  const prefs = getPrefs();
+  const minutes = Math.round(buildPlan(prefs).reduce((a, s) => a + s.dur, 0) / 60);
+  const eyebrow = prefs.mode === 'poste' ? 'Mode matin · départ 7h00' : 'Mode matin · jour off';
+  const sub = done ? `${done} / ${total} étapes · on continue` : `${total} étapes · ${minutes} min`;
   el.setAttribute('aria-label', 'Ouvrir la routine du matin');
   el.innerHTML = `
-    <div class="feat-sky" style="background:${skyGradient(f)}">
-      <div class="feat-stars" style="opacity:${starsAt(f)}">
-        <span style="background-image:${cssStars(34, 3)}"></span>
-        <span class="twinkle-a" style="background-image:${cssStars(12, 9)}"></span>
+    <div class="aur-inner">
+      <div class="feat-sky" style="background:${skyGradient(f)}">
+        <div class="aur-stars" style="opacity:${starsAt(f)}">
+          <span class="drift" style="background-image:${cssStars(46, 3)}"></span>
+          <span class="twinkle-a" style="background-image:${cssStars(16, 9)}"></span>
+        </div>
+        <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="feat-glow" style="opacity:${glowAt(f)}"></div>
       </div>
-      <div class="feat-glow" style="opacity:${glowAt(f)}"></div>
-    </div>
-    <div class="feat-horizon" aria-hidden="true"></div>
-    <div class="feat-body">
-      <span class="feat-eyebrow">Mode matin</span>
-      <div class="feat-tile">
+      <div class="aur-dawn"></div>
+      <div class="aur-horizon" aria-hidden="true"><span class="aur-flare"></span></div>
+      <div class="aur-body">
+        <span class="aur-eyebrow">${eyebrow}</span>
+        <h2 class="aur-title">${letters('Routine du matin')}</h2>
+        <span class="aur-sub">${sub}</span>
+      </div>
+      <div class="aur-orb">
+        <span class="aur-shock"></span>
+        <span class="pulse"></span><span class="pulse p2"></span>
+        <svg class="aur-ring" viewBox="0 0 100 100" aria-hidden="true">
+          <circle class="trk" cx="50" cy="50" r="46"/>
+          <circle class="prg" cx="50" cy="50" r="46" pathLength="1" style="stroke-dashoffset:${1 - done / total}"/>
+          <circle class="orbit" cx="50" cy="50" r="49.5"/>
+        </svg>
         ${SUN_ICON}
-        <span class="feat-txt">
-          <span class="t1">Routine du matin</span>
-          <span class="t2">${featuredSubtitle(done, total)}</span>
-        </span>
-        <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
       </div>
-      <div class="feat-bar"><span style="width:${(done / total) * 100}%"></span></div>
+      <div class="aur-glare"></div>
+      <span class="aur-border" aria-hidden="true"></span>
     </div>
   `;
+  attachTilt(el);
+
+  // Entrée de la carte, une seule fois (l'accueil se redessine chaque minute).
+  if (!featIntroPlayed && !reduceMotion()) {
+    featIntroPlayed = true;
+    el.querySelectorAll('.aur-title .ch').forEach((c) =>
+      c.animate(
+        { opacity: [0, 1], transform: ['translateY(.5em) rotate(6deg)', 'none'], filter: ['blur(8px)', 'blur(0px)'] },
+        { duration: 750, delay: 250 + Number(c.style.getPropertyValue('--i')) * 30, easing: 'cubic-bezier(.2,.75,.2,1)', fill: 'backwards' }
+      )
+    );
+    el.querySelector('.aur-orb').animate(
+      { opacity: [0, 1], transform: ['scale(.6) rotate(-40deg)', 'none'] },
+      { duration: 900, delay: 350, easing: 'cubic-bezier(.2,.8,.2,1.2)', fill: 'backwards' }
+    );
+    el.querySelector('.aur-horizon').animate(
+      { transform: ['translate(-50%, 30px)', 'translateX(-50%)'] },
+      { duration: 1100, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }
+    );
+  }
   playIconReturn(el, false);
 }
 
@@ -805,6 +921,7 @@ export default {
   isFeatured: (now) => now.getHours() < FEATURED_UNTIL_HOUR && !getProgress().complete,
   renderFeatured,
   renderCard,
-  beforeOpen: riseIcon, // le soleil de l'icône se lève avant l'ouverture
+  // Animation de la carte touchée avant l'ouverture : allumage complet ou simple lever de soleil.
+  beforeOpen: (tile) => (tile.classList.contains('feat') ? ignite(tile) : riseIcon(tile)),
   open,
 };

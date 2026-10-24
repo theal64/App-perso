@@ -47,7 +47,9 @@ export function riseIcon(tile) {
   const q = (sel) => tile.querySelector(sel);
   const all = (sel) => tile.querySelectorAll(sel);
   if (!q('.ico')) return Promise.resolve();
-  tile.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+  // Annule les animations précédentes du script (pas les boucles CSS de la carte).
+  const isCss = (a) => typeof CSSAnimation !== 'undefined' && a instanceof CSSAnimation;
+  tile.getAnimations({ subtree: true }).filter((a) => !isCss(a)).forEach((a) => a.cancel());
   tile.classList.add('ico-on');
   if (reduceMotion()) return Promise.resolve();
 
