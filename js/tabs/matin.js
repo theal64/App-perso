@@ -898,7 +898,17 @@ function open(screen, { close }) {
     else if (action === 'preview') startRun(PREVIEW_SPEED);
     else if (action === 'stop' || action === 'end-preview') stopRun();
     else if (action === 'pause') togglePause();
-    else if (action === 'reset' && confirm('Remettre la routine d’aujourd’hui à zéro ?')) {
+    else if (action === 'reset') {
+      // Confirmation dans le bouton (confirm() peut être bloqué dans l'app installée sur iPhone).
+      if (!target.dataset.armed) {
+        target.dataset.armed = '1';
+        target.textContent = 'Toucher encore pour confirmer';
+        setTimeout(() => {
+          delete target.dataset.armed;
+          target.textContent = '↺ Réinitialiser aujourd’hui (test)';
+        }, 3000);
+        return;
+      }
       const history = getHistory();
       delete history[dateKey()];
       save(HISTORY_KEY, history);

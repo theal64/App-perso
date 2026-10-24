@@ -1,0 +1,272 @@
+<title>Icône Routine matin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: une colonne d'app (menu principal fictif) sur le ciel de Mode Matin ; sous le menu, un banc de test (ralenti, navigation, états de l'icône). Univers sombre unique. */
+:root{
+  --night:#040b22;
+  --sky:#8fcaff;
+  --ice:#eaf4ff;
+  --muted:#a9bfe0;
+  --line:rgba(234,244,255,.14);
+  --glass:rgba(6,16,44,.5);
+  --ember:#ff6f6a;
+  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --ease-out:cubic-bezier(.2,.75,.2,1);
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+body{
+  background:var(--night);color:var(--ice);font-family:var(--f-display);margin:0;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:0 40px;min-height:100vh;box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.horizon{position:fixed;left:50%;bottom:0;width:240vmax;height:240vmax;transform:translate(-50%,88%);border-radius:50%;
+  background:#03050d;box-shadow:0 -2px 0 rgba(255,96,80,.75),0 -24px 80px rgba(255,70,50,.28),0 -2px 0 2px rgba(140,195,255,.2);z-index:0;pointer-events:none}
+.col{position:relative;z-index:1;max-width:440px;margin:0 auto;padding-top:28px;display:flex;flex-direction:column;gap:14px}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--sky)}
+.date{font:400 13px/1 var(--f-mono);color:var(--muted);text-transform:capitalize}
+h1{margin:4px 0 10px;font:800 clamp(40px,12vw,60px)/.95 var(--f-display);letter-spacing:-.035em}
+
+/* Tuiles du menu */
+.tile{position:relative;display:flex;align-items:center;gap:16px;width:100%;text-align:left;padding:14px 16px 14px 14px;border-radius:22px;
+  border:1px solid var(--line);background:var(--glass);color:var(--ice);font:inherit;cursor:pointer;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transform-origin:center;touch-action:manipulation}
+.tile:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
+.tile[disabled]{cursor:default;opacity:.55}
+.ibox{position:relative;flex:none;width:56px;height:56px;border-radius:17px;display:grid;place-items:center;
+  background:linear-gradient(160deg,rgba(143,202,255,.10),rgba(143,202,255,.02));border:1px solid var(--line)}
+.halo{position:absolute;inset:-18px;border-radius:50%;background:radial-gradient(circle,rgba(143,202,255,.55),rgba(255,111,106,.12) 45%,transparent 70%);opacity:0;pointer-events:none}
+.ico{width:32px;height:32px;overflow:visible;position:relative}
+.ico .sun{stroke:var(--muted);fill:rgba(143,202,255,0);stroke-width:1.75}
+.ico .ray{stroke:var(--sky);stroke-width:1.75;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:0}
+.ico .hz{stroke:var(--muted);stroke-width:1.75;stroke-linecap:round;fill:none}
+.ico .red{fill:var(--ember);opacity:0;transform-box:fill-box;transform-origin:center}
+.ico .sung{transform:translateY(5.5px)}
+.tile.on .ico .sun{stroke:var(--sky);fill:var(--sky)}
+.tile.on .ico .sung{transform:none}
+.tile.on .ico .ray{stroke-dashoffset:0;opacity:1}
+.tile.on .ico .hz{stroke:var(--ice)}
+.tile.on .ico .red{opacity:1}
+.fx{position:absolute;left:50%;top:50%;width:0;height:0;overflow:visible;pointer-events:none}
+.fx svg{position:absolute;left:-60px;top:-60px;width:120px;height:120px;overflow:visible}
+.fx .wave{fill:none;transform-box:fill-box;transform-origin:center;opacity:0;vector-effect:non-scaling-stroke}
+.fx .spk{stroke-linecap:round;stroke-width:1.6;opacity:0}
+.txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.t1{font:700 20px/1.1 var(--f-display);letter-spacing:-.01em;color:var(--muted)}
+.tile.on .t1{color:var(--ice)}
+.t2{font:400 12px/1.2 var(--f-mono);color:var(--muted)}
+.chev{flex:none;width:20px;height:20px;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.soon{font:500 10px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 8px}
+.plain{width:30px;height:30px;stroke:var(--muted);fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+
+/* Écran Routine (destination) */
+.dest{display:flex;flex-direction:column;gap:14px;padding-top:6px}
+.back{align-self:flex-start;border:1px solid var(--line);background:var(--glass);color:var(--ice);border-radius:999px;padding:10px 16px;font:500 13px/1 var(--f-mono);cursor:pointer}
+.kin{margin:8px 0 0;font:800 clamp(40px,12vw,60px)/.95 var(--f-display);letter-spacing:-.035em}
+.kin .w{display:inline-block;white-space:nowrap}
+.kin .c{display:inline-block;animation:rise .75s var(--ease-out) both;animation-delay:calc(var(--i)*32ms)}
+@keyframes rise{from{opacity:0;transform:translateY(.55em) rotate(6deg);filter:blur(10px)}}
+.dest p{margin:0;font:400 15px/1.5 var(--f-display);color:var(--muted);max-width:36ch}
+
+/* Banc de test */
+.bench{margin-top:26px;border:1px solid var(--line);border-radius:22px;background:var(--glass);padding:16px;display:flex;flex-direction:column;gap:14px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.tg{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:999px;padding:10px 14px;font:500 12px/1 var(--f-mono);cursor:pointer}
+.tg[aria-pressed="true"]{background:var(--ice);color:var(--night);border-color:var(--ice)}
+.tg:focus-visible,.back:focus-visible{outline:3px solid var(--sky);outline-offset:3px}
+.states{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:end}
+.st{display:flex;flex-direction:column;align-items:center;gap:8px;font:400 11px/1.3 var(--f-mono);color:var(--muted);text-align:center}
+.st img{display:block}
+.timeline{font:400 12px/1.6 var(--f-mono);color:var(--muted);margin:0;padding-left:18px}
+.timeline b{color:var(--ice);font-weight:500}
+@media (prefers-reduced-motion: reduce){.kin .c{animation:none}}
+</style>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="horizon" aria-hidden="true"></div>
+
+<div class="col">
+  <!-- MENU PRINCIPAL -->
+  <section id="menu">
+    <span class="date" id="date">samedi 24 octobre</span>
+    <h1>Accueil</h1>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button class="tile" id="tile" type="button" aria-label="Ouvrir la routine du matin">
+        <span class="ibox">
+          <span class="halo" id="halo"></span>
+          <svg class="ico" id="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <defs><clipPath id="ciel"><path d="M0 0H24V19.5H21.5C17.5 16.4 6.5 16.4 2.5 19.5H0Z"/></clipPath></defs>
+            <g clip-path="url(#ciel)"><g class="sung" id="sung"><circle class="sun" id="sun" cx="12" cy="11.5" r="3"/></g></g>
+            <path class="ray" pathLength="1" data-o="0" d="M12 6.9V5.1"/>
+            <path class="ray" pathLength="1" data-o="1" d="M15.25 8.25L16.5 7"/>
+            <path class="ray" pathLength="1" data-o="1" d="M8.75 8.25L7.5 7"/>
+            <path class="ray" pathLength="1" data-o="2" d="M16.6 11.5H18.4"/>
+            <path class="ray" pathLength="1" data-o="2" d="M7.4 11.5H5.6"/>
+            <path class="hz" id="hz" d="M2.5 19.5C6.5 16.4 17.5 16.4 21.5 19.5"/>
+            <circle class="red" id="red" cx="19.6" cy="4.4" r=".8"/>
+          </svg>
+          <span class="fx"><svg viewBox="-60 -60 120 120" id="fx" aria-hidden="true">
+            <circle class="wave" id="w1" cx="0" cy="-1" r="34" stroke="#ff6f6a" stroke-width="1.2"/>
+            <circle class="wave" id="w2" cx="0" cy="-1" r="32" stroke="#eaf4ff" stroke-width=".9"/>
+          </svg></span>
+        </span>
+        <span class="txt"><span class="t1" id="t1">Routine du matin</span><span class="t2">6h05 → 7h00 · 7 étapes</span></span>
+        <svg class="chev" id="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <button class="tile" type="button" disabled>
+        <span class="ibox"><svg class="plain" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"/></svg></span>
+        <span class="txt"><span class="t1">Bilan du soir</span><span class="t2">21h · 3 questions</span></span>
+        <span class="soon">Bientôt</span>
+      </button>
+      <button class="tile" type="button" disabled>
+        <span class="ibox"><svg class="plain" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg></span>
+        <span class="txt"><span class="t1">Stats</span><span class="t2">Séries · historique</span></span>
+        <span class="soon">Bientôt</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- DESTINATION -->
+  <section id="dest" class="dest" hidden>
+    <button class="back" id="back" type="button">← Accueil</button>
+    <span class="eyebrow">Mode matin</span>
+    <h2 class="kin" id="kin">Routine du matin</h2>
+    <p>Écran de destination fictif : ici s'ouvrira Mode Matin. Reviens à l'accueil pour voir l'icône se recoucher.</p>
+  </section>
+
+  <!-- BANC DE TEST -->
+  <section class="bench" aria-label="Banc de test">
+    <span class="eyebrow">Banc de test</span>
+    <div class="row">
+      <button class="tg" id="slow" type="button" aria-pressed="false">Ralenti ×4</button>
+      <button class="tg" id="nav" type="button" aria-pressed="true">Navigation après l'effet</button>
+      <button class="tg" id="replay" type="button">Rejouer l'effet</button>
+    </div>
+    <div class="states">
+      <div class="st"><img src="" data-icon="off" width="24" height="24" alt="Icône inactive, 24 px">Inactive · 24</div>
+      <div class="st"><img src="" data-icon="on" width="24" height="24" alt="Icône active, 24 px">Active · 24</div>
+      <div class="st"><img src="" data-icon="on" width="72" height="72" alt="Icône active, 72 px">Active · 72</div>
+    </div>
+    <ol class="timeline">
+      <li><b>0 ms</b> appui : tuile 0,96, retour haptique léger</li>
+      <li><b>0–460 ms</b> le soleil se lève derrière l'horizon (léger dépassement)</li>
+      <li><b>120–740 ms</b> onde de choc rouge et glace, étincelles</li>
+      <li><b>180–530 ms</b> les rayons se tracent du centre vers les côtés</li>
+      <li><b>380–680 ms</b> l'étoile rouge s'allume</li>
+      <li><b>560 ms</b> transition vers l'écran Routine</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $=id=>document.getElementById(id);
+let K=1, NAV=true, busy=false;
+$('date').textContent=new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long'}).format(new Date());
+
+/* vignettes des états à partir des mêmes tracés */
+const svgOn=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><defs><clipPath id="c"><path d="M0 0H24V19.5H21.5C17.5 16.4 6.5 16.4 2.5 19.5H0Z"/></clipPath></defs><g clip-path="url(#c)"><circle cx="12" cy="11.5" r="3" fill="#8FCAFF" stroke="#8FCAFF" stroke-width="1.75"/></g><g stroke="#8FCAFF" stroke-width="1.75"><path d="M12 6.9V5.1"/><path d="M15.25 8.25L16.5 7"/><path d="M8.75 8.25L7.5 7"/><path d="M16.6 11.5H18.4"/><path d="M7.4 11.5H5.6"/></g><path d="M2.5 19.5C6.5 16.4 17.5 16.4 21.5 19.5" stroke="#EAF4FF" stroke-width="1.75"/><circle cx="19.6" cy="4.4" r="0.8" fill="#FF6F6A"/></svg>`;
+const svgOff=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><defs><clipPath id="c"><path d="M0 0H24V19.5H21.5C17.5 16.4 6.5 16.4 2.5 19.5H0Z"/></clipPath></defs><g clip-path="url(#c)"><circle cx="12" cy="17" r="3" stroke="#A9BFE0" stroke-width="1.75"/></g><path d="M2.5 19.5C6.5 16.4 17.5 16.4 21.5 19.5" stroke="#A9BFE0" stroke-width="1.75"/></svg>`;
+document.querySelectorAll('[data-icon]').forEach(img=>img.src='data:image/svg+xml;utf8,'+encodeURIComponent(img.dataset.icon==='on'?svgOn:svgOff));
+
+/* étincelles */
+const fx=$('fx'), SP=[];
+const ang=[-150,-118,-90,-62,-30,-172,-8];
+ang.forEach((a,i)=>{const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+  const red=(i===1||i===4);l.setAttribute('class','spk');l.setAttribute('stroke',red?'#ff6f6a':(i%2?'#eaf4ff':'#8fcaff'));
+  l.setAttribute('x1',0);l.setAttribute('y1',0);l.setAttribute('x2',0);l.setAttribute('y2',0);fx.appendChild(l);SP.push({l,a:a*Math.PI/180,d:22+((i*7)%11)});});
+
+const E='cubic-bezier(.2,.75,.2,1)';
+function anim(el,kf,o){return el.animate(kf,Object.assign({fill:'both',easing:E},o,{duration:o.duration*K,delay:(o.delay||0)*K}));}
+function haptic(){try{navigator.vibrate&&navigator.vibrate(8);}catch(e){}}
+
+const tile=$('tile');
+function press(){ if(busy) return; haptic(); anim(tile,[{transform:'scale(1)'},{transform:'scale(.96)'}],{duration:90,easing:'ease-out'}); }
+function rise(){
+  if(busy) return; busy=true;
+  tile.classList.remove('on');
+  const fin=[];
+  if(reduce){
+    tile.classList.add('on');
+    fin.push(anim($('ico'),[{opacity:.3},{opacity:1}],{duration:200}).finished);
+  } else {
+    fin.push(anim(tile,[{transform:'scale(.96)'},{transform:'scale(1.025)',offset:.45},{transform:'scale(1)'}],{duration:380}).finished);
+    anim($('sung'),[{transform:'translateY(5.5px)'},{transform:'translateY(-.7px)',offset:.65},{transform:'translateY(0)'}],{duration:460});
+    anim($('sun'),[{fill:'rgba(143,202,255,0)',stroke:'#a9bfe0'},{fill:'rgba(143,202,255,1)',stroke:'#8fcaff'}],{duration:300,delay:80});
+    anim($('hz'),[{stroke:'#a9bfe0'},{stroke:'#eaf4ff'}],{duration:220});
+    document.querySelectorAll('.ico .ray').forEach(r=>anim(r,[{strokeDashoffset:1,opacity:0},{strokeDashoffset:0,opacity:1}],{duration:260,delay:180+(+r.dataset.o)*45}));
+    anim($('red'),[{opacity:0,transform:'scale(0)'},{opacity:1,transform:'scale(1.6)',offset:.55},{opacity:1,transform:'scale(1)'}],{duration:300,delay:380});
+    anim($('halo'),[{opacity:0,transform:'scale(.6)'},{opacity:.95,transform:'scale(1)',offset:.3},{opacity:0,transform:'scale(1.25)'}],{duration:700,delay:60,easing:'ease-out'});
+    anim($('w1'),[{opacity:.8,transform:'scale(.12)'},{opacity:0,transform:'scale(1)'}],{duration:620,delay:120,easing:'cubic-bezier(.1,.6,.3,1)'});
+    anim($('w2'),[{opacity:.7,transform:'scale(.12)'},{opacity:0,transform:'scale(.92)'}],{duration:580,delay:150,easing:'cubic-bezier(.1,.6,.3,1)'});
+    SP.forEach((s,i)=>{const x=Math.cos(s.a),y=Math.sin(s.a)-.04;
+      anim(s.l,[
+        {opacity:0,transform:`translate(${x*6}px,${y*6}px)`},
+        {opacity:1,transform:`translate(${x*12}px,${y*12}px)`,offset:.25},
+        {opacity:0,transform:`translate(${x*s.d}px,${y*s.d+3}px)`}],{duration:520,delay:140+i*12,easing:'cubic-bezier(.15,.7,.3,1)'});
+      s.l.setAttribute('x2',(-x*4).toFixed(2));s.l.setAttribute('y2',(-y*4).toFixed(2));});
+    anim($('t1'),[{color:'#a9bfe0'},{color:'#eaf4ff'}],{duration:220});
+    anim($('chev'),[{transform:'translateX(0)'},{transform:'translateX(4px)',offset:.5},{transform:'translateX(0)'}],{duration:360,delay:200});
+    fin.push(new Promise(r=>setTimeout(r,560*K)));
+  }
+  Promise.all(fin).then(()=>{
+    tile.classList.add('on');
+    if(NAV) go(); else busy=false;
+  });
+}
+function kinetic(el,text){el.innerHTML='';let i=0;text.split(' ').forEach((w,wi,arr)=>{const ws=document.createElement('span');ws.className='w';[...w].forEach(ch=>{const c=document.createElement('span');c.className='c';c.style.setProperty('--i',i++);c.textContent=ch;ws.appendChild(c);});el.appendChild(ws);if(wi<arr.length-1){el.appendChild(document.createTextNode(' '));i++;}});}
+function go(){
+  const m=$('menu'), d=$('dest');
+  m.animate([{opacity:1,transform:'none'},{opacity:0,transform:'scale(.98)'}],{duration:220*K,easing:'ease-in',fill:'forwards'}).finished.then(()=>{
+    m.hidden=true; m.getAnimations().forEach(a=>a.cancel());
+    d.hidden=false; kinetic($('kin'),'Routine du matin');
+    d.animate([{opacity:0,transform:'translateY(24px)'},{opacity:1,transform:'none'}],{duration:380*K,easing:E});
+    busy=false;
+  });
+}
+function backHome(){
+  const m=$('menu'), d=$('dest');
+  d.hidden=true; m.hidden=false;
+  m.animate([{opacity:0,transform:'translateY(-12px)'},{opacity:1,transform:'none'}],{duration:320*K,easing:E});
+  setTimeout(setDown,180*K);
+}
+function setDown(){ // le soleil se recouche
+  tile.getAnimations({subtree:true}).forEach(a=>a.cancel());
+  tile.classList.remove('on');
+  if(reduce) return;
+  anim($('sung'),[{transform:'translateY(0)'},{transform:'translateY(5.5px)'}],{duration:360,easing:'cubic-bezier(.5,0,.75,0)'});
+  anim($('sun'),[{fill:'rgba(143,202,255,1)',stroke:'#8fcaff'},{fill:'rgba(143,202,255,0)',stroke:'#a9bfe0'}],{duration:300});
+  document.querySelectorAll('.ico .ray').forEach(r=>anim(r,[{strokeDashoffset:0,opacity:1},{strokeDashoffset:1,opacity:0}],{duration:180,delay:(2-r.dataset.o)*30,easing:'ease-in'}));
+  anim($('red'),[{opacity:1},{opacity:0}],{duration:160});
+  anim($('hz'),[{stroke:'#eaf4ff'},{stroke:'#a9bfe0'}],{duration:300});
+  setTimeout(()=>tile.getAnimations({subtree:true}).forEach(a=>a.cancel()),420*K);
+}
+
+tile.addEventListener('pointerdown',press);
+tile.addEventListener('click',rise);
+$('back').onclick=backHome;
+$('slow').onclick=e=>{K=K===1?4:1;e.currentTarget.setAttribute('aria-pressed',K===4);};
+$('nav').onclick=e=>{NAV=!NAV;e.currentTarget.setAttribute('aria-pressed',NAV);};
+$('replay').onclick=()=>{ if(!$('dest').hidden){$('dest').hidden=true;$('menu').hidden=false;} tile.getAnimations({subtree:true}).forEach(a=>a.cancel()); tile.classList.remove('on'); const n=NAV; NAV=false; busy=false; rise(); setTimeout(()=>{NAV=n;},1200*K); };
+
+/* ciel étoilé léger */
+const cv=$('sky'),ctx=cv.getContext('2d');let W,H,S=[];
+function rs(){const d=Math.min(2,devicePixelRatio||1);W=innerWidth;H=innerHeight;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0);
+  S=[...Array(Math.round(W*H/2600))].map(()=>({x:Math.random()*W,y:Math.random()*H,s:.4+Math.pow(Math.random(),3)*1.5,p:Math.random()*6.3,f:.3+Math.random(),c:Math.random()<.06?'255,111,106':'220,234,255'}));}
+addEventListener('resize',rs);rs();
+function draw(t){t/=1000;const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#01030c');g.addColorStop(.7,'#060a1e');g.addColorStop(1,'#1a0710');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  for(const s of S){const a=.25+.5*(.5+.5*Math.sin(t*s.f+s.p));ctx.fillStyle=`rgba(${s.c},${a})`;ctx.fillRect((s.x+t*1.5)%W,s.y,s.s,s.s);}
+  if(!reduce)requestAnimationFrame(draw);}
+requestAnimationFrame(draw);
+})();
+</script>
