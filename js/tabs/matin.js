@@ -24,7 +24,17 @@ const ICON_LIST = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" s
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // TEMPORAIRE (tests) : remet la routine du jour à zéro. À retirer ensuite.
-const RESET_BUTTON = '<button type="button" class="r-reset" data-action="reset">↺ Réinitialiser aujourd’hui (test)</button>';
+const RESET_BUTTON = '<button type="button" class="r-reset" data-action="reset">↺ Réinitialiser aujourd’hui (test)</button><span class="r-version"></span>';
+
+// Affiche la version en cache (ex. "version v6") pour savoir si la mise à jour est arrivée.
+function showVersion(root) {
+  const el = root.querySelector('.r-version');
+  if (!el || !window.caches) return;
+  caches.keys().then((keys) => {
+    const key = keys.find((k) => k.startsWith('routine-'));
+    if (key) el.textContent = `version ${key.replace('routine-', '')}`;
+  }).catch(() => {});
+}
 
 // ---------- Données ----------
 
@@ -259,6 +269,7 @@ function open(screen, { close }) {
       <p class="r-rule">Lance, pose l’écran, ne scrolle pas. Le téléphone reste à la maison pendant la balade.</p>
       ${RESET_BUTTON}
     `;
+    showVersion(view);
   }
 
   function setPref(key, value) {
@@ -504,6 +515,7 @@ function open(screen, { close }) {
       ${wasPreview ? '' : RESET_BUTTON}
     `;
     kinetic(view.querySelector('.r-kin'), timed ? 'Départ' : 'Routine complète');
+    showVersion(view);
     if (timed && prefs.sound) {
       chime(523, 784);
       setTimeout(() => chime(659, 988), 380);

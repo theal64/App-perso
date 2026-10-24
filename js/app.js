@@ -15,6 +15,7 @@ let current = null; // section ouverte
 let cleanup = null;
 let busy = false;
 let renderedDay = dateKey();
+let reloadAfterClose = false; // une nouvelle version attend la fermeture de l'écran
 
 function defaultCard(el, section) {
   el.classList.toggle('is-soon', !!section.soon);
@@ -75,6 +76,7 @@ async function closeSection() {
   screen.replaceChildren();
   setThemeColor(null);
   busy = false;
+  if (reloadAfterClose) location.reload();
 }
 
 // Rafraîchit l'accueil (carte vedette à 11 h, nouveau jour après minuit).
@@ -90,8 +92,24 @@ setInterval(refresh, 60 * 1000);
 
 renderHome();
 
+// Mises à jour : on vérifie s'il existe une nouvelle version à l'ouverture et à chaque
+// retour au premier plan. Quand elle prend la main, on recharge (après fermeture
+// de l'écran ouvert, pour ne pas couper une routine en cours).
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) return; // première installation : rien à recharger
+    if (current) reloadAfterClose = true;
+    else location.reload();
+  });
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+    } catch {
+      // pas de service worker (navigation privée…) : l'app marche quand même en ligne
+    }
   });
 }

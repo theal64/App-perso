@@ -379,6 +379,7 @@ button { font: inherit; color: inherit; }
   border: 1px dashed var(--r-line); background: transparent; color: var(--r-muted);
   font: 500 11px/1 var(--f-mono); letter-spacing: .04em;
 }
+.r-version { align-self: center; margin-top: 6px; font: 400 10px/1 var(--f-mono); color: var(--r-muted); opacity: .7; }
 
 /* Liste complète (feuille du bas) */
 .r-backdrop {
