@@ -309,7 +309,12 @@ button { font: inherit; color: inherit; }
 .soon h1 { margin: 12px 0 6px; color: var(--text); font-size: 26px; }
 .soon p { margin: 0; }
 
-/* ---------- Ciel de l'aube ---------- */
+/* ---------- Fond animé de la routine (js/endsky.js) ---------- */
+.endsky { position: absolute; inset: 0; overflow: hidden; background: #05060a; }
+.endsky canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.endsky .es-gl { opacity: 0; }
+
+/* ---------- Ciel de l'aube (aperçu de la carte d'accueil) ---------- */
 
 .sky { position: absolute; inset: 0; overflow: hidden; background: #02040b; }
 .sky > * { position: absolute; pointer-events: none; }
@@ -398,34 +403,7 @@ button { font: inherit; color: inherit; }
   font-family: var(--f-display);
   color: var(--r-text);
 }
-/* aube : horizon rose-orange, boutons plus opaques et accent chaud */
-.is-dusk .routine {
-  --r-text: #fff6f2;
-  --r-muted: rgba(255, 242, 238, .86);
-  --r-accent: #ffd6a6;
-  --r-glass: rgba(44, 22, 60, .52);
-  --r-line: rgba(255, 238, 232, .34);
-  --r-solid: #fff6ef;
-  --r-solid-text: #3a1d3c;
-  --r-warn: #ffd27a;
-  --r-late: #ffb0a4;
-  --r-sheen: rgba(255, 214, 166, .5);
-}
-.is-dusk .r-breath { background: radial-gradient(circle, rgba(255, 214, 166, .3), rgba(255, 214, 166, .05) 60%, transparent 72%); }
-
-/* jour : le ciel est clair, on passe aux tons sable et terracotta de l'accueil */
-.is-day .routine {
-  --r-text: var(--ink);
-  --r-muted: #5f554a;
-  --r-accent: var(--terracotta);
-  --r-glass: rgba(255, 255, 255, .64);
-  --r-line: rgba(42, 38, 32, .2);
-  --r-solid: var(--terracotta);
-  --r-solid-text: #fff;
-  --r-warn: #a8661a;
-  --r-late: #b6402f;
-  --r-sheen: rgba(255, 228, 190, .45);
-}
+/* Le fond reste sombre de la nuit à l'aube : une seule palette (DESIGN.md §2). */
 .routine, .routine * {
   transition: color var(--sky-dur) ease-in-out, background-color var(--sky-dur) ease-in-out,
     border-color var(--sky-dur) ease-in-out, stroke var(--sky-dur) ease-in-out;
@@ -456,6 +434,8 @@ button { font: inherit; color: inherit; }
 .r-hero { margin-top: auto; display: flex; flex-direction: column; gap: 14px; }
 .r-h1 { margin: 0; font: 800 clamp(44px, 13vw, 76px)/.92 var(--f-display); letter-spacing: -.035em; }
 .r-h1 em { font-style: normal; color: var(--r-accent); }
+.r-h1 .ln { display: block; overflow: hidden; padding-bottom: .06em; }
+.r-h1 .ln > * { display: inline-block; }
 .r-plan { margin: 0; max-width: 40ch; font: 400 15px/1.45 var(--f-display); color: var(--r-muted); }
 .r-plan b { color: var(--r-text); font-weight: 600; }
 .r-opts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
@@ -530,7 +510,6 @@ button { font: inherit; color: inherit; }
   background: radial-gradient(circle, rgba(143, 202, 255, .32), rgba(143, 202, 255, .05) 60%, transparent 72%);
   transform: scale(.8); transition: none; will-change: transform;
 }
-.is-day .r-breath { background: radial-gradient(circle, rgba(200, 120, 63, .28), rgba(200, 120, 63, .05) 60%, transparent 72%); }
 .r-mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
 .r-cd { font: 500 calc(var(--R) * .24)/1 var(--f-mono); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
 .r-cd span { display: inline-block; }
@@ -657,7 +636,6 @@ button { font: inherit; color: inherit; }
   transform: translateY(calc(100% + 40px));
   transition: transform .45s var(--ease-ios);
 }
-.is-day .r-sheet { background: rgba(255, 255, 255, .88); color: var(--ink); }
 .sheet-open .r-backdrop { opacity: 1; pointer-events: auto; }
 .sheet-open .r-sheet { transform: none; }
 
@@ -670,7 +648,6 @@ button { font: inherit; color: inherit; }
 
 .checklist { list-style: none; margin: 0; padding: 0; }
 .checklist li + li { border-top: 1px solid rgba(255, 255, 255, .12); }
-.is-day .checklist li + li { border-top-color: rgba(42, 38, 32, .1); }
 
 .check {
   display: flex; align-items: center; gap: 14px;

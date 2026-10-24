@@ -6,7 +6,8 @@
 
 import { load, save } from '../storage.js';
 import { dateKey, addDays } from '../date.js';
-import { createSky, cssStars, glowAt, skyGradient, stageOf, starsAt } from '../sky.js';
+import { cssStars, glowAt, skyGradient, stageOf, starsAt } from '../sky.js';
+import { createEndSky } from '../endsky.js';
 import { unlockAudio, chime } from '../chime.js';
 import {
   PREVIEW_SPEED, buildPlan, departFor, fmtCD, fmtHM, getPrefs, planText,
@@ -18,8 +19,20 @@ import { SUN_ICON, riseIcon, setIcon } from './matin-icon.js';
 const HISTORY_KEY = 'matin:history';
 const RUN_KEY = 'matin:run';
 const FEATURED_UNTIL_HOUR = 11;
-const DUSK_FROM = 4; // à partir de 4 étapes, l'horizon rosit : boutons plus opaques
-const DAY_TEXT_FROM = 6; // à partir de 6 étapes, le ciel est clair : texte foncé
+
+// Phases du fond (design/DESIGN.md §6) selon la position dans la routine :
+// index de l'étape en cours (0 lit … 6 balade) + avancement dans l'étape ; 7 = écran Départ.
+function skyPhase(pos) {
+  if (pos < 2) return { awake: 0, dawn: 0 }; // 1 · nuit endormie (lit, eau)
+  if (pos < 3) return { awake: pos - 2, dawn: 0 }; // 2 · éveil (qi gong)
+  if (pos < 6) return { awake: 1, dawn: (0.4 * (pos - 3)) / 3 }; // 3 · fin du monde (exos, café, dents)
+  if (pos < 7) return { awake: 1, dawn: 0.4 + 0.45 * (pos - 6) }; // 4 · aube (balade)
+  return { awake: 1, dawn: 1 }; // 4 · départ
+}
+
+// Rythme du fond lié à l'étape (modes du prototype).
+const SUB_SKY_MODE = { bounce: 'shake', swing: 'swing', stretch: 'sky' };
+const STEP_SKY_MODE = { exos: 'pulse', cafe: 'steam', dents: 'flow', balade: 'walk' };
 
 const ICON_CLOSE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 const ICON_LIST = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>';
@@ -373,7 +386,7 @@ const ringTicks = Array.from({ length: 60 }, (_, k) => {
 
 function open(screen, { close }) {
   screen.innerHTML = `
-    <div class="sky"></div>
+    <div class="endsky"></div>
     <div class="screen-content routine">
       <header class="r-top">
         <button type="button" class="r-icon" data-action="close" aria-label="Retour à l’accueil">${ICON_CLOSE}</button>
@@ -393,7 +406,7 @@ function open(screen, { close }) {
     </div>
   `;
 
-  const sky = createSky(screen.querySelector('.sky'));
+  const sky = createEndSky(screen.querySelector('.endsky'));
   const content = screen.querySelector('.routine');
   const view = content.querySelector('.r-view');
   const bar = content.querySelector('.r-bar');
@@ -409,16 +422,25 @@ function open(screen, { close }) {
   let ui = null; // éléments de la vue minutée
   let litTicks = -1;
   let sub = -1;
+  let showingEnd = false; // écran Départ affiché
 
   const persist = () => run && run.speed === 1 && save(RUN_KEY, run);
   const currentStep = () => plan.find((s) => !doneIds(run).includes(s.id));
 
-  function updateSky({ instant = false } = {}) {
-    const done = doneIds(run).length;
-    sky.set(done, plan.length, { instant });
-    // Trois ambiances pour garder textes et boutons lisibles : nuit, aube (rose-orange), jour.
-    screen.classList.toggle('is-dusk', done >= DUSK_FROM && done < DAY_TEXT_FROM);
-    screen.classList.toggle('is-day', done >= DAY_TEXT_FROM);
+  // Fond : position dans la routine (étape en cours + avancement ; 7 = Départ) → phase.
+  // Pendant le déroulé minuté, tick() passe la position exacte à chaque image.
+  function updateSky({ instant = false, pos, mode = 'calm' } = {}) {
+    if (pos === undefined) {
+      const i = plan.findIndex((s) => !doneIds(run).includes(s.id));
+      pos = showingEnd || i === -1 ? plan.length : i;
+      if (showingEnd) mode = 'ring';
+      // Déroulé en cours : on reprend à l'avancement exact de l'étape.
+      else if (run && plan[i]?.id === run.stepId && run.stepDur) {
+        pos += Math.min(1, Math.max(0, (clockNow(run) - run.stepClock) / 1000 / run.stepDur));
+      }
+    }
+    const { awake, dawn } = skyPhase(pos);
+    sky.set(awake, dawn, mode, { instant });
   }
 
   function renderBar() {
@@ -447,6 +469,7 @@ function open(screen, { close }) {
   function showStart({ animate = true } = {}) {
     cancelAnimationFrame(raf);
     ui = null;
+    showingEnd = false;
     const remaining = plan.filter((s) => !getChecked().includes(s.id));
     const seg = (key, value, label) =>
       `<button type="button" data-action="pref" data-key="${key}" data-value="${value}" aria-pressed="${prefs[key] === value}">${label}</button>`;
@@ -640,6 +663,7 @@ function open(screen, { close }) {
       day: dateKey(), speed, clockAt: 0, realAt: now, paused: false,
       simStart: speed > 1 ? previewStart(prefs) : now, previewDone: [],
     };
+    showingEnd = false;
     enterStep(0, { sound: false });
     if (!run) return; // tout était déjà fait
     updateSky();
@@ -655,6 +679,7 @@ function open(screen, { close }) {
     save(RUN_KEY, null);
     tag.hidden = true;
     content.classList.remove('is-preview');
+    showingEnd = false;
     updateSky();
     renderBar();
     showStart();
@@ -722,11 +747,13 @@ function open(screen, { close }) {
     // Respiration de l'anneau et sous-étapes du qi gong (rythmes en temps réel).
     const rt = performance.now() / 1000;
     let scale = 0.8 + Math.sin(rt * 0.6) * 0.04;
+    let skyMode = STEP_SKY_MODE[step.id] || 'calm';
     if (step.subs) {
       let acc = 0;
       let si = 0;
       for (; si < step.subs.length - 1 && el >= acc + step.subs[si].t; si++) acc += step.subs[si].t;
       const s = step.subs[si];
+      if (SUB_SKY_MODE[s.fig]) skyMode = SUB_SKY_MODE[s.fig];
       if (si !== sub) {
         sub = si;
         ui.sub.textContent = `${si + 1}/${step.subs.length} · ${s.name}`;
@@ -759,6 +786,7 @@ function open(screen, { close }) {
       }
     }
     if (!reduceMotion()) ui.breath.style.transform = `scale(${scale})`;
+    updateSky({ pos: plan.indexOf(step) + p, mode: skyMode });
 
     raf = requestAnimationFrame(tick);
   }
@@ -787,6 +815,7 @@ function open(screen, { close }) {
       save(RUN_KEY, null);
     }
     tag.hidden = true;
+    showingEnd = true;
     updateSky();
     renderBar();
 
@@ -841,6 +870,7 @@ function open(screen, { close }) {
 
   list.addEventListener('change', (e) => {
     setChecked(e.target.dataset.id, e.target.checked);
+    showingEnd = false; // finish() le remet si tout est coché
     updateSky();
     renderBar();
     if (run) {
