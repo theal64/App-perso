@@ -15,6 +15,7 @@ import {
 } from './matin-plan.js';
 import { FIGURES, FIGURE_PERIOD } from './matin-figures.js';
 import { SUN_ICON, riseIcon, setIcon } from './matin-icon.js';
+import { CHEVRON } from '../icons.js';
 
 const HISTORY_KEY = 'matin:history';
 const RUN_KEY = 'matin:run';
@@ -262,14 +263,14 @@ function renderFeatured(el) {
 
 function renderCard(el) {
   const { done, total, complete } = getProgress();
-  el.classList.toggle('is-done', complete);
   el.classList.toggle('ico-on', complete);
   el.innerHTML = `
-    <div class="tile-top">${SUN_ICON}</div>
-    <div>
-      <p class="tile-title">${complete ? 'Routine faite' : 'Routine du matin'}</p>
-      <p class="tile-sub">${complete ? streakText(getStreak()) : `${done} / ${total}`}</p>
-    </div>
+    ${SUN_ICON}
+    <span class="t-txt">
+      <span class="t1">${complete ? 'Routine faite' : 'Routine du matin'}</span>
+      <span class="t2">${complete ? streakText(getStreak()) : `${done} / ${total} étapes`}</span>
+    </span>
+    ${CHEVRON}
   `;
   playIconReturn(el, complete);
 }

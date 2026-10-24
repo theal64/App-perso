@@ -5,6 +5,8 @@ import { getStreak } from './tabs/matin.js';
 import { dateKey, formatLongDate } from './date.js';
 import { openCard, closeCard } from './transition.js';
 import { setThemeColor } from './theme.js';
+import { cssStars } from './sky.js';
+import { CHEVRON } from './icons.js';
 
 const home = document.getElementById('home');
 const screen = document.getElementById('screen');
@@ -17,14 +19,16 @@ let busy = false;
 let renderedDay = dateKey();
 let reloadAfterClose = false; // une nouvelle version attend la fermeture de l'écran
 
+// Tuile de menu par défaut : icône, titre, sous-titre, puis "Bientôt" ou chevron.
 function defaultCard(el, section) {
   el.classList.toggle('is-soon', !!section.soon);
   el.innerHTML = `
-    <div class="tile-top">
-      <span class="tile-icon" aria-hidden="true">${section.icon}</span>
-      ${section.soon ? '<span class="badge">Bientôt</span>' : ''}
-    </div>
-    <p class="tile-title">${section.title}</p>
+    <span class="ibox" aria-hidden="true">${section.icon}</span>
+    <span class="t-txt">
+      <span class="t1">${section.title}</span>
+      ${section.subtitle ? `<span class="t2">${section.subtitle}</span>` : ''}
+    </span>
+    ${section.soon ? '<span class="badge">Bientôt</span>' : CHEVRON}
   `;
 }
 
@@ -32,7 +36,7 @@ function makeTile(section, featured) {
   const el = document.createElement('button');
   el.type = 'button';
   el.dataset.id = section.id;
-  el.className = featured ? 'tile feat' : 'tile tile-small';
+  el.className = featured ? 'tile feat' : 'tile tile-row';
   if (featured) section.renderFeatured(el);
   else if (section.renderCard) section.renderCard(el);
   else defaultCard(el, section);
@@ -90,6 +94,11 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') refresh();
 });
 setInterval(refresh, 60 * 1000);
+
+// Étoiles du ciel de l'accueil (fixes, une couche scintille doucement).
+const [stars, twinkle] = document.querySelectorAll('.home-sky span');
+stars.style.backgroundImage = cssStars(110, 21);
+twinkle.style.backgroundImage = cssStars(30, 37);
 
 renderHome();
 

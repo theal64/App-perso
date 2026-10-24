@@ -1,6 +1,6 @@
 // Service worker : met l'app en cache pour qu'elle marche hors ligne.
 // Pense à incrémenter VERSION à chaque modification des fichiers ci-dessous.
-const VERSION = 'v12';
+const VERSION = 'v13';
 const CACHE = `routine-${VERSION}`;
 
 const ASSETS = [
@@ -12,6 +12,7 @@ const ASSETS = [
   './js/storage.js',
   './js/date.js',
   './js/theme.js',
+  './js/icons.js',
   './js/sky.js',
   './js/endsky.js',
   './js/transition.js',

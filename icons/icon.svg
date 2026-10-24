@@ -1,7 +1,25 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#f6f1e9"/>
-  <circle cx="256" cy="300" r="120" fill="#c8783f"/>
-  <rect x="0" y="300" width="512" height="212" fill="#f6f1e9"/>
-  <rect x="96" y="300" width="320" height="20" rx="10" fill="#c8783f"/>
-  <rect x="156" y="350" width="200" height="20" rx="10" fill="#c8783f" opacity=".6"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Icône de l'app : « Routine du matin » active (design/components), sur fond night. -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="78%" r="60%">
+      <stop offset="0" stop-color="#1a2f6e"/>
+      <stop offset="1" stop-color="#040B22"/>
+    </radialGradient>
+    <clipPath id="ciel"><path d="M0 0H24V19.5H21.5C17.5 16.4 6.5 16.4 2.5 19.5H0Z"/></clipPath>
+  </defs>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <g transform="translate(96 86) scale(13.333)">
+    <g clip-path="url(#ciel)">
+      <circle cx="12" cy="11.5" r="3" fill="#8FCAFF" stroke="#8FCAFF" stroke-width="1.75"/>
+    </g>
+    <g stroke="#8FCAFF" stroke-width="1.75">
+      <path d="M12 6.9V5.1"/>
+      <path d="M15.25 8.25L16.5 7"/>
+      <path d="M8.75 8.25L7.5 7"/>
+      <path d="M16.6 11.5H18.4"/>
+      <path d="M7.4 11.5H5.6"/>
+    </g>
+    <path d="M2.5 19.5C6.5 16.4 17.5 16.4 21.5 19.5" stroke="#EAF4FF" stroke-width="1.75"/>
+    <circle cx="19.6" cy="4.4" r="0.8" fill="#FF6F6A"/>
+  </g>
 </svg>
