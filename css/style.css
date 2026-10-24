@@ -200,15 +200,44 @@ button { font: inherit; color: inherit; }
   transition: opacity var(--sky-dur) ease-in-out, transform var(--sky-dur) ease-in-out;
   will-change: opacity, transform;
 }
+.sky { --sun-size: min(40vw, 170px); --sun-shift: 2.6; }
 .sky-sun {
-  --size: min(40vw, 170px);
-  left: 50%; bottom: 16vh; width: var(--size); height: var(--size); margin-left: calc(var(--size) / -2);
+  left: 50%; bottom: 16vh; width: var(--sun-size); height: var(--sun-size); margin-left: calc(var(--sun-size) / -2);
   border-radius: 50%;
   background: radial-gradient(circle at 50% 45%, #fffaf0 0%, #ffe3b0 40%, #f7b273 75%, #ec955a 100%);
   box-shadow: 0 0 60px 20px rgba(255, 196, 130, .5), 0 0 160px 70px rgba(255, 170, 110, .28);
-  transform: translateY(260%);
+  transform: translateY(calc(var(--sun-shift) * 100%));
   transition: transform var(--sky-dur) cubic-bezier(.45, 0, .25, 1);
   will-change: transform;
+}
+/* Rayons centrés sur le soleil, qui tournent très lentement */
+.sky-rays {
+  left: 50%; width: 150vmax; height: 150vmax; margin-left: -75vmax;
+  bottom: calc(16vh + var(--sun-size) / 2 - 75vmax);
+  opacity: 0;
+  transform: translateY(calc(var(--sun-shift) * var(--sun-size)));
+  transition: opacity var(--sky-dur) ease-in-out, transform var(--sky-dur) cubic-bezier(.45, 0, .25, 1);
+  will-change: transform, opacity;
+}
+.sky-rays i {
+  position: absolute; inset: 0;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 214, 160, .38) 0deg 3.5deg, transparent 3.5deg 15deg);
+  -webkit-mask-image: radial-gradient(circle, #000 4%, rgba(0, 0, 0, .45) 18%, transparent 46%);
+  mask-image: radial-gradient(circle, #000 4%, rgba(0, 0, 0, .45) 18%, transparent 46%);
+  animation: spin 120s linear infinite;
+  will-change: transform;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+/* Étoiles filantes (dans le calque des étoiles : elles s'effacent avec l'aube) */
+.sky-meteors { position: absolute; inset: 0; overflow: hidden; }
+.meteor {
+  position: absolute; width: 150px; height: 1.6px; border-radius: 2px; opacity: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .95), rgba(190, 215, 255, .4) 30%, transparent);
+  transform-origin: 0 50%;
+}
+.meteor::before {
+  content: ""; position: absolute; left: -3px; top: -3px; width: 7px; height: 7px; border-radius: 50%;
+  background: radial-gradient(circle, #fff, rgba(255, 255, 255, 0) 70%);
 }
 .sky-instant, .sky-instant * { transition: none !important; }
 
@@ -227,6 +256,7 @@ button { font: inherit; color: inherit; }
   --r-solid-text: #040b22;
   --r-warn: #ffc56b;
   --r-late: #ff8f80;
+  --r-sheen: rgba(143, 202, 255, .5);
   font-family: var(--f-display);
   color: var(--r-text);
 }
@@ -241,6 +271,7 @@ button { font: inherit; color: inherit; }
   --r-solid-text: #fff;
   --r-warn: #a8661a;
   --r-late: #b6402f;
+  --r-sheen: rgba(255, 228, 190, .45);
 }
 .routine, .routine * {
   transition: color var(--sky-dur) ease-in-out, background-color var(--sky-dur) ease-in-out,
@@ -254,7 +285,15 @@ button { font: inherit; color: inherit; }
 .r-bar i { display: block; height: 100%; width: 0; background: var(--r-accent); transition: none; }
 .is-preview .r-list-btn { visibility: hidden; }
 
-.r-view { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.r-view { position: relative; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+
+/* Particules de lumière de l'écran de fin */
+.r-motes { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.r-motes i {
+  position: absolute; bottom: 14vh; width: var(--s); height: var(--s); border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle, #fff6e0, rgba(255, 190, 120, .6) 50%, transparent 70%);
+}
+.r-end > :not(.r-motes) { position: relative; }
 
 .r-eyebrow {
   font: 500 12px/1 var(--f-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--r-accent);
@@ -289,7 +328,7 @@ button { font: inherit; color: inherit; }
 }
 .r-cta::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(110deg, transparent 30%, rgba(143, 202, 255, .5) 50%, transparent 70%);
+  background: linear-gradient(110deg, transparent 30%, var(--r-sheen) 50%, transparent 70%);
   transform: translateX(-100%); animation: sheen 3.6s ease-in-out infinite;
 }
 @keyframes sheen { 60%, 100% { transform: translateX(100%); } }
@@ -318,8 +357,10 @@ button { font: inherit; color: inherit; }
 .r-kin .w { display: inline-block; white-space: nowrap; }
 .r-kin .c {
   display: inline-block;
-  animation: rise .75s cubic-bezier(.2, .75, .2, 1) both; animation-delay: calc(var(--i) * 32ms);
+  animation: rise .75s cubic-bezier(.2, .75, .2, 1) both; animation-delay: calc(var(--base, 0ms) + var(--i) * 32ms);
 }
+.r-stage { position: relative; }
+.r-kin-ghost { position: absolute; left: 0; right: 0; pointer-events: none; }
 @keyframes rise { from { opacity: 0; transform: translateY(.55em) rotate(6deg); filter: blur(10px); } }
 
 .r-ring { --R: min(66vw, 36vh, 340px); position: relative; flex: none; width: var(--R); height: var(--R); }
@@ -339,6 +380,22 @@ button { font: inherit; color: inherit; }
 .is-day .r-breath { background: radial-gradient(circle, rgba(200, 120, 63, .28), rgba(200, 120, 63, .05) 60%, transparent 72%); }
 .r-mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
 .r-cd { font: 500 calc(var(--R) * .24)/1 var(--f-mono); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.r-cd span { display: inline-block; }
+.r-ripple {
+  position: absolute; inset: 3%; border-radius: 50%; pointer-events: none; opacity: 0;
+  border: 2px solid var(--r-accent); box-shadow: 0 0 24px var(--r-accent);
+}
+/* 10 dernières secondes : l'anneau bat comme un cœur */
+.r-ring.is-ending { animation: beat 1s ease-out infinite; }
+.r-ring.is-ending .r-cd { color: var(--r-accent); }
+@keyframes beat {
+  0%, 40%, 100% { transform: scale(1); }
+  12% { transform: scale(1.035); }
+}
+/* Pause : l'anneau s'assombrit, le temps clignote doucement */
+.is-paused .r-ring svg, .is-paused .r-breath { opacity: .45; transition: opacity .4s ease; }
+.is-paused .r-cd { animation: blink 1.6s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .35; } }
 .r-sub {
   min-height: 1em; font: 500 calc(var(--R) * .042)/1 var(--f-mono);
   letter-spacing: .14em; text-transform: uppercase; color: var(--r-accent);
@@ -354,6 +411,11 @@ button { font: inherit; color: inherit; }
   font: 500 14px/1 var(--f-mono); letter-spacing: .04em;
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
 }
+.r-bot button, .r-cta, .r-ghost, .r-seg button, .r-chip {
+  transition: transform .18s var(--ease-ios), color var(--sky-dur) ease-in-out,
+    background-color var(--sky-dur) ease-in-out, border-color var(--sky-dur) ease-in-out;
+}
+.r-bot button:active, .r-cta:active, .r-ghost:active, .r-chip:active { transform: scale(.96); }
 .r-bot .r-fait { flex: 1.6; background: var(--r-solid); color: var(--r-solid-text); border-color: var(--r-solid); font-weight: 600; }
 .r-bot .r-stop { flex: .8; color: var(--r-muted); }
 
@@ -427,6 +489,8 @@ button { font: inherit; color: inherit; }
 }
 .check input:checked + .box { background: var(--terracotta); border-color: var(--terracotta); opacity: 1; }
 .check input:checked + .box::after { transform: rotate(45deg) scale(1); }
+.check input:checked + .box { animation: pop .35s cubic-bezier(.3, .7, .3, 1.4); }
+@keyframes pop { 0% { transform: scale(.8); } 60% { transform: scale(1.12); } 100% { transform: none; } }
 .check input:checked ~ .text { opacity: .55; text-decoration: line-through; }
 .check input:focus-visible + .box { outline: 2px solid var(--terracotta); outline-offset: 2px; }
 
@@ -436,7 +500,8 @@ button { font: inherit; color: inherit; }
   :root { --sky-dur: .8s; }
   .twinkle-a, .twinkle-b { animation: none; }
   .tile { transition: none; }
-  .r-kin .c, .r-cta::after { animation: none; }
+  .r-kin .c, .r-cta::after, .sky-rays i, .r-ring.is-ending, .is-paused .r-cd,
+  .check input:checked + .box { animation: none; }
   .r-sheet { transition: opacity .2s ease; transform: none; opacity: 0; pointer-events: none; }
   .sheet-open .r-sheet { opacity: 1; pointer-events: auto; }
 }

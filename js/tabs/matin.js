@@ -158,6 +158,66 @@ function kinetic(el, text) {
   });
 }
 
+// ---------- Motion design ----------
+
+const EASE_OUT = 'cubic-bezier(.2,.75,.2,1)';
+
+// Entrée en cascade des enfants de `root`.
+function stagger(root, base = 0, step = 70) {
+  if (reduceMotion()) return;
+  [...root.children].forEach((child, i) =>
+    child.animate(
+      { opacity: [0, 1], transform: ['translateY(18px)', 'none'] },
+      { duration: 700, delay: base + i * step, easing: EASE_OUT, fill: 'backwards' }
+    )
+  );
+}
+
+// Compte à rebours : seuls les chiffres qui changent défilent.
+function setDigits(el, text) {
+  const prev = el.dataset.v || '';
+  if (prev === text) return;
+  el.dataset.v = text;
+  el.setAttribute('aria-label', text);
+  if (prev.length !== text.length) {
+    el.innerHTML = [...text].map((ch) => `<span aria-hidden="true">${ch}</span>`).join('');
+    return;
+  }
+  [...text].forEach((ch, i) => {
+    if (ch === prev[i]) return;
+    const span = el.children[i];
+    span.textContent = ch;
+    if (!reduceMotion()) {
+      span.animate(
+        { transform: ['translateY(-38%)', 'none'], opacity: [0, 1] },
+        { duration: 320, easing: EASE_OUT }
+      );
+    }
+  });
+}
+
+// Particules de lumière qui montent sur l'écran de fin.
+function lightMotes() {
+  const box = document.createElement('div');
+  box.className = 'r-motes';
+  box.setAttribute('aria-hidden', 'true');
+  if (reduceMotion()) return box;
+  for (let i = 0; i < 22; i++) {
+    const m = document.createElement('i');
+    m.style.left = `${Math.random() * 100}%`;
+    m.style.setProperty('--s', `${3 + Math.random() * 5}px`);
+    box.append(m);
+    m.animate(
+      {
+        transform: ['translate(0, 0)', `translate(${(Math.random() - 0.5) * 60}px, -${45 + Math.random() * 30}vh)`],
+        opacity: [0, 0.9, 0],
+      },
+      { duration: 4000 + Math.random() * 3000, delay: 600 + Math.random() * 3000, iterations: Infinity, easing: 'cubic-bezier(.3,.6,.4,1)' }
+    );
+  }
+  return box;
+}
+
 const ringTicks = Array.from({ length: 60 }, (_, k) => {
   const a = (k / 60) * Math.PI * 2;
   const r1 = k % 5 ? 82 : 79;
@@ -218,9 +278,8 @@ function open(screen, { close }) {
 
   function renderBar() {
     const done = doneIds(run);
-    bar.innerHTML = plan
-      .map((s) => `<span><i style="width:${done.includes(s.id) ? 100 : 0}%"></i></span>`)
-      .join('');
+    if (bar.children.length !== plan.length) bar.innerHTML = plan.map(() => '<span><i></i></span>').join('');
+    plan.forEach((s, i) => (bar.children[i].firstChild.style.width = done.includes(s.id) ? '100%' : '0%'));
   }
 
   async function requestWake() {
@@ -240,7 +299,7 @@ function open(screen, { close }) {
 
   // --- Vue de départ : options + lancement ---
 
-  function showStart() {
+  function showStart({ animate = true } = {}) {
     cancelAnimationFrame(raf);
     ui = null;
     const remaining = plan.filter((s) => !getChecked().includes(s.id));
@@ -250,7 +309,7 @@ function open(screen, { close }) {
     view.innerHTML = `
       <div class="r-hero">
         <span class="r-eyebrow">Mode matin</span>
-        <h1 class="r-h1">Lève-toi.<br><em>Suis le rythme.</em></h1>
+        <h1 class="r-h1"><span class="ln"><span>Lève-toi.</span></span><span class="ln"><em>Suis le rythme.</em></span></h1>
         <p class="r-plan">${planText(prefs, remaining)}</p>
       </div>
       <div class="r-opts">
@@ -270,6 +329,16 @@ function open(screen, { close }) {
       ${RESET_BUTTON}
     `;
     showVersion(view);
+    if (animate && !reduceMotion()) {
+      stagger(view, 120);
+      // Les deux lignes du titre montent depuis leur ligne de base.
+      view.querySelectorAll('.r-h1 .ln > *').forEach((line, i) =>
+        line.animate(
+          { transform: ['translateY(105%)', 'none'] },
+          { duration: 900, delay: 220 + i * 130, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }
+        )
+      );
+    }
   }
 
   function setPref(key, value) {
@@ -277,7 +346,7 @@ function open(screen, { close }) {
     savePrefs(prefs);
     plan = buildPlan(prefs);
     renderBar();
-    showStart();
+    showStart({ animate: false });
   }
 
   // --- Vue minutée ---
@@ -292,6 +361,7 @@ function open(screen, { close }) {
       <div class="r-stage">
         <h2 class="r-kin" aria-live="polite"></h2>
         <div class="r-ring">
+          <div class="r-ripple"></div>
           <div class="r-breath"></div>
           <svg viewBox="0 0 200 200" aria-hidden="true">
             <g class="r-ticks">${ringTicks}</g>
@@ -317,21 +387,58 @@ function open(screen, { close }) {
       clock: $('.r-clock'), pill: $('.r-pill'), kin: $('.r-kin'), breath: $('.r-breath'),
       prg: $('.prg'), ticks: [...view.querySelectorAll('.tk')], sub: $('.r-sub'), cd: $('.r-cd'),
       cue: $('.r-cue'), next: $('.r-next'), pause: $('[data-action="pause"]'),
+      ring: $('.r-ring'), ripple: $('.r-ripple'),
     };
     litTicks = -1;
     tag.hidden = run.speed === 1;
     content.classList.toggle('is-preview', run.speed > 1);
+    view.classList.toggle('is-paused', run.paused);
     renderStep();
+    stagger(view, 60, 90);
+    if (!reduceMotion()) {
+      ui.ring.animate(
+        { transform: ['scale(.86) rotate(-12deg)', 'none'], opacity: [0, 1] },
+        { duration: 1100, delay: 120, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }
+      );
+    }
     cancelAnimationFrame(raf);
     raf = requestAnimationFrame(tick);
   }
 
-  function renderStep() {
+  // L'ancien titre s'envole en se floutant pendant que le nouveau monte.
+  function exitTitle() {
+    if (reduceMotion() || !ui.kin.textContent) return false;
+    const ghost = ui.kin.cloneNode(true);
+    ghost.className = 'r-kin r-kin-ghost';
+    ghost.removeAttribute('aria-live');
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.style.top = `${ui.kin.offsetTop}px`;
+    ghost.querySelectorAll('.c').forEach((c) => (c.style.animation = 'none'));
+    ui.kin.parentNode.append(ghost);
+    ghost
+      .animate(
+        { opacity: [1, 0], transform: ['none', 'translateY(-42px) scale(.96)'], filter: ['blur(0px)', 'blur(8px)'] },
+        { duration: 520, easing: 'cubic-bezier(.5,0,.75,0)', fill: 'forwards' }
+      )
+      .finished.then(() => ghost.remove());
+    return true;
+  }
+
+  function renderStep({ exit = false } = {}) {
     const step = plan.find((s) => s.id === run.stepId);
     if (!step || !ui) return;
     const index = plan.indexOf(step);
     sub = -1;
+    ui.kin.style.setProperty('--base', exit && exitTitle() ? '260ms' : '0ms');
     kinetic(ui.kin, step.label);
+    if (exit && !reduceMotion()) {
+      [ui.cue, ui.next].forEach((el, i) =>
+        el.animate(
+          { opacity: [0, 1], transform: ['translateY(10px)', 'none'] },
+          { duration: 600, delay: 420 + i * 80, easing: EASE_OUT, fill: 'backwards' }
+        )
+      );
+    }
     ui.sub.textContent = '';
     ui.cue.className = 'r-cue';
     ui.cue.textContent = step.subs ? '' : stepCue(step, prefs, wallAt(run, run.stepClock), run.stepDur);
@@ -349,14 +456,32 @@ function open(screen, { close }) {
     run.stepDur = stepDur(step, prefs, wallAt(run, clock));
     persist();
     renderBar();
-    renderStep();
+    renderStep({ exit: true });
     if (sound && prefs.sound) chime();
+  }
+
+  // Étape validée : onde qui part de l'anneau, petit rebond, segment qui s'illumine.
+  function celebrate(id) {
+    if (!ui || reduceMotion()) return;
+    ui.ripple.animate(
+      { transform: ['scale(.92)', 'scale(1.4)'], opacity: [0.9, 0] },
+      { duration: 950, easing: 'cubic-bezier(.2,.7,.3,1)' }
+    );
+    ui.ring.animate(
+      { transform: ['scale(1)', 'scale(1.045)', 'scale(1)'] },
+      { duration: 560, easing: 'cubic-bezier(.3,.7,.3,1)' }
+    );
+    bar.children[plan.findIndex((s) => s.id === id)]?.animate(
+      { transform: ['scaleY(1)', 'scaleY(2.6)', 'scaleY(1)'], filter: ['brightness(1)', 'brightness(1.9)', 'brightness(1)'] },
+      { duration: 650, easing: 'ease-out' }
+    );
   }
 
   function completeStep(id) {
     if (run.speed > 1) run.previewDone.push(id);
     else setChecked(id, true);
     updateSky();
+    celebrate(id);
   }
 
   function startRun(speed) {
@@ -398,6 +523,7 @@ function open(screen, { close }) {
     }
     persist();
     ui.pause.textContent = run.paused ? 'Reprendre' : 'Pause';
+    view.classList.toggle('is-paused', run.paused);
   }
 
   function tick() {
@@ -418,7 +544,8 @@ function open(screen, { close }) {
     const p = Math.min(1, el / run.stepDur);
     const now = wallNow(run);
 
-    ui.cd.textContent = fmtCD(run.stepDur - el);
+    setDigits(ui.cd, fmtCD(run.stepDur - el));
+    ui.ring.classList.toggle('is-ending', run.stepDur - el <= 10 && !run.paused);
     ui.prg.style.strokeDashoffset = String(1 - p);
     const lit = Math.floor(p * 60);
     if (lit !== litTicks) {
@@ -514,15 +641,16 @@ function open(screen, { close }) {
       <button type="button" class="r-cta" data-action="${wasPreview ? 'end-preview' : 'close'}">${wasPreview ? 'Retour' : 'Retour à l’accueil'}</button>
       ${wasPreview ? '' : RESET_BUTTON}
     `;
-    kinetic(view.querySelector('.r-kin'), timed ? 'Départ' : 'Routine complète');
+    const kin = view.querySelector('.r-kin');
+    kin.style.setProperty('--base', timed ? '900ms' : '150ms');
+    kinetic(kin, timed ? 'Départ' : 'Routine complète');
     showVersion(view);
     if (timed && prefs.sound) {
       chime(523, 784);
       setTimeout(() => chime(659, 988), 380);
     }
-    if (!reduceMotion()) {
-      view.animate({ opacity: [0, 1] }, { duration: 600, delay: timed ? 900 : 0, easing: 'ease-out', fill: 'backwards' });
-    }
+    stagger(view, timed ? 800 : 80, 110);
+    view.prepend(lightMotes());
   }
 
   // --- Liste complète : cocher dans le désordre ---
@@ -544,7 +672,10 @@ function open(screen, { close }) {
   }
 
   function toggleSheet(show) {
-    if (show) renderList();
+    if (show) {
+      renderList();
+      stagger(list, 140, 45);
+    }
     content.classList.toggle('sheet-open', show);
     sheet.setAttribute('aria-hidden', String(!show));
   }

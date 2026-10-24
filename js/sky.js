@@ -21,6 +21,7 @@ const STARS = [1, 0.92, 0.75, 0.5, 0.28, 0.1, 0, 0];
 const GLOW = [0, 0.08, 0.2, 0.4, 0.65, 0.9, 0.8, 0.5];
 const GLOW_SCALE = [0.5, 0.55, 0.65, 0.75, 0.9, 1, 1.1, 1.2];
 const SUN = [260, 260, 260, 260, 250, 175, 90, 0]; // translateY, en % de sa taille
+const RAYS = [0, 0, 0, 0, 0, 0.08, 0.35, 0.8];
 
 const clamp = (v) => Math.min(1, Math.max(0, v));
 
@@ -136,15 +137,45 @@ function drawStarfield([base, twinkleA, twinkleB], w, h) {
 export function createSky(el) {
   el.innerHTML = `
     ${STAGES.map((_, i) => `<div class="sky-layer" style="background:${skyGradient(i)}"></div>`).join('')}
-    <div class="sky-stars"><canvas></canvas><canvas class="twinkle-a"></canvas><canvas class="twinkle-b"></canvas></div>
+    <div class="sky-stars">
+      <canvas></canvas><canvas class="twinkle-a"></canvas><canvas class="twinkle-b"></canvas>
+      <div class="sky-meteors"></div>
+    </div>
     <div class="sky-glow"></div>
+    <div class="sky-rays"><i></i></div>
     <div class="sky-sun"></div>
   `;
   const layers = [...el.querySelectorAll('.sky-layer')];
   const stars = el.querySelector('.sky-stars');
   const canvases = [...stars.querySelectorAll('canvas')];
+  const meteors = el.querySelector('.sky-meteors');
   const glow = el.querySelector('.sky-glow');
-  const sun = el.querySelector('.sky-sun');
+  const rays = el.querySelector('.sky-rays');
+  let starsOpacity = 1;
+
+  // Étoiles filantes de temps en temps, tant qu'il fait nuit.
+  let meteorTimer;
+  const spawnMeteor = () => {
+    meteorTimer = setTimeout(spawnMeteor, 4000 + Math.random() * 7000);
+    if (document.hidden || starsOpacity < 0.25 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const m = document.createElement('div');
+    m.className = 'meteor';
+    m.style.left = `${innerWidth * (0.3 + Math.random() * 0.8)}px`;
+    m.style.top = `${innerHeight * Math.random() * 0.35}px`;
+    meteors.append(m);
+    const angle = -(20 + Math.random() * 25); // vers le bas à gauche
+    const dist = 260 + Math.random() * 260;
+    const at = (k) => `rotate(${angle}deg) translateX(${-dist * k}px)`;
+    m.animate(
+      [
+        { transform: at(0), opacity: 0 },
+        { transform: at(0.15), opacity: 1, offset: 0.15 },
+        { transform: at(1), opacity: 0 },
+      ],
+      { duration: 900 + Math.random() * 600, easing: 'cubic-bezier(.3,.1,.6,1)' }
+    ).finished.then(() => m.remove());
+  };
+  meteorTimer = setTimeout(spawnMeteor, 1800);
 
   let drawnSize = '';
   let resizeTimer;
@@ -167,10 +198,13 @@ export function createSky(el) {
     if (instant) el.classList.add('sky-instant');
 
     layers.forEach((layer, i) => (layer.style.opacity = i === 0 ? 1 : clamp(f - i + 1)));
-    stars.style.opacity = starsAt(f);
+    starsOpacity = starsAt(f);
+    stars.style.opacity = starsOpacity;
     glow.style.opacity = glowAt(f);
     glow.style.transform = `scaleY(${interp(GLOW_SCALE, f)})`;
-    sun.style.transform = `translateY(${interp(SUN, f)}%)`;
+    rays.style.opacity = interp(RAYS, f);
+    // Le soleil et ses rayons suivent la même variable : ils montent ensemble.
+    el.style.setProperty('--sun-shift', interp(SUN, f) / 100);
     setThemeColor(STAGES[Math.round(f)][0]);
 
     if (instant) {
@@ -184,6 +218,7 @@ export function createSky(el) {
     destroy() {
       removeEventListener('resize', onResize);
       clearTimeout(resizeTimer);
+      clearTimeout(meteorTimer);
     },
   };
 }
