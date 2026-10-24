@@ -250,8 +250,8 @@ button { font: inherit; color: inherit; }
   --r-text: #eaf4ff;
   --r-muted: #a9bfe0;
   --r-accent: #8fcaff;
-  --r-glass: rgba(6, 16, 44, .42);
-  --r-line: rgba(234, 244, 255, .16);
+  --r-glass: rgba(6, 16, 44, .55);
+  --r-line: rgba(234, 244, 255, .22);
   --r-solid: #eaf4ff;
   --r-solid-text: #040b22;
   --r-warn: #ffc56b;
@@ -260,13 +260,28 @@ button { font: inherit; color: inherit; }
   font-family: var(--f-display);
   color: var(--r-text);
 }
+/* aube : horizon rose-orange, boutons plus opaques et accent chaud */
+.is-dusk .routine {
+  --r-text: #fff6f2;
+  --r-muted: rgba(255, 242, 238, .86);
+  --r-accent: #ffd6a6;
+  --r-glass: rgba(44, 22, 60, .52);
+  --r-line: rgba(255, 238, 232, .34);
+  --r-solid: #fff6ef;
+  --r-solid-text: #3a1d3c;
+  --r-warn: #ffd27a;
+  --r-late: #ffb0a4;
+  --r-sheen: rgba(255, 214, 166, .5);
+}
+.is-dusk .r-breath { background: radial-gradient(circle, rgba(255, 214, 166, .3), rgba(255, 214, 166, .05) 60%, transparent 72%); }
+
 /* jour : le ciel est clair, on passe aux tons sable et terracotta de l'accueil */
 .is-day .routine {
   --r-text: var(--ink);
-  --r-muted: #6f6458;
+  --r-muted: #5f554a;
   --r-accent: var(--terracotta);
-  --r-glass: rgba(255, 255, 255, .5);
-  --r-line: rgba(42, 38, 32, .14);
+  --r-glass: rgba(255, 255, 255, .64);
+  --r-line: rgba(42, 38, 32, .2);
   --r-solid: var(--terracotta);
   --r-solid-text: #fff;
   --r-warn: #a8661a;
@@ -364,7 +379,7 @@ button { font: inherit; color: inherit; }
 @keyframes rise { from { opacity: 0; transform: translateY(.55em) rotate(6deg); filter: blur(10px); } }
 
 .r-ring { --R: min(66vw, 36vh, 340px); position: relative; flex: none; width: var(--R); height: var(--R); }
-.r-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.r-ring > svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
 .r-ring .trk { fill: none; stroke: var(--r-line); stroke-width: 2; }
 .r-ring .prg {
   fill: none; stroke: var(--r-accent); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 1;
@@ -381,6 +396,54 @@ button { font: inherit; color: inherit; }
 .r-mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
 .r-cd { font: 500 calc(var(--R) * .24)/1 var(--f-mono); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
 .r-cd span { display: inline-block; }
+
+/* Silhouettes animées des sous-étapes : le compte à rebours se fait plus petit */
+.r-fig { display: none; }
+.has-fig .r-fig { display: block; width: calc(var(--R) * .4); height: calc(var(--R) * .36); }
+.has-fig .r-cd { font-size: calc(var(--R) * .14); }
+.has-fig .r-mid { gap: 6px; }
+.fig { width: 100%; height: 100%; overflow: visible; }
+.fig * {
+  fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round;
+  transform-box: view-box; transition: none;
+}
+.fig circle { fill: currentColor; stroke: none; }
+.fig .ground { stroke: var(--r-line); stroke-width: 2; }
+
+/* Sautillements */
+.fig-bounce .body { animation: fig-hop .45s cubic-bezier(.3, 0, .5, 1) infinite alternate; }
+.fig-bounce .arm-l, .fig-bounce .arm-r { transform-origin: 50px 35px; animation: fig-dangle .225s ease-in-out infinite alternate; }
+.fig-bounce .arm-r { animation-direction: alternate-reverse; }
+@keyframes fig-hop { to { transform: translateY(-8px); } }
+@keyframes fig-dangle { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+
+/* Rotations bras ballants (2,4 s : gauche puis droite) */
+.fig-swing .upper { transform-origin: 50px 64px; animation: fig-twist 2.4s ease-in-out infinite; animation-delay: var(--sync, 0s); }
+.fig-swing .arm-l, .fig-swing .arm-r { transform-origin: 50px 35px; animation: fig-arms 2.4s ease-in-out infinite; animation-delay: var(--sync, 0s); }
+@keyframes fig-twist { 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
+@keyframes fig-arms { 25% { transform: rotate(58deg); } 75% { transform: rotate(-58deg); } }
+
+/* Paumes au ciel en inspirant, on se penche en expirant (8 s) */
+.fig-stretch .upper { transform-origin: 50px 64px; animation: fig-bend 8s ease-in-out infinite; animation-delay: var(--sync, 0s); }
+.fig-stretch .arms { transform-origin: 50px 35px; animation: fig-reach 8s ease-in-out infinite; animation-delay: var(--sync, 0s); }
+@keyframes fig-bend { 0%, 100% { transform: rotate(72deg); } 50% { transform: rotate(0deg); } }
+@keyframes fig-reach { 0%, 100% { transform: rotate(-72deg); } 50% { transform: rotate(-180deg); } }
+
+/* Pompes */
+.fig-pushup .body { transform-origin: 18px 78px; animation: fig-push 2s ease-in-out infinite; }
+.fig-pushup .arm { transform-origin: 88px 80px; animation: fig-push-arm 2s ease-in-out infinite; }
+@keyframes fig-push { 50% { transform: rotate(7deg); } }
+@keyframes fig-push-arm { 50% { transform: scaleY(.53); } }
+
+/* Planche lean */
+.fig-lean .body { animation: fig-lean 3s ease-in-out infinite alternate; }
+.fig-lean .arm { transform-origin: 78px 80px; animation: fig-lean-arm 3s ease-in-out infinite alternate; }
+@keyframes fig-lean { to { transform: translateX(5px); } }
+@keyframes fig-lean-arm { to { transform: rotate(11deg); } }
+
+/* Combo ou hold : équilibre sur les mains */
+.fig-hold .body { transform-origin: 60px 82px; animation: fig-wobble 2.4s ease-in-out infinite alternate; }
+@keyframes fig-wobble { from { transform: rotate(-2.5deg); } to { transform: rotate(2.5deg); } }
 .r-ripple {
   position: absolute; inset: 3%; border-radius: 50%; pointer-events: none; opacity: 0;
   border: 2px solid var(--r-accent); box-shadow: 0 0 24px var(--r-accent);
@@ -393,7 +456,7 @@ button { font: inherit; color: inherit; }
   12% { transform: scale(1.035); }
 }
 /* Pause : l'anneau s'assombrit, le temps clignote doucement */
-.is-paused .r-ring svg, .is-paused .r-breath { opacity: .45; transition: opacity .4s ease; }
+.is-paused .r-ring > svg, .is-paused .r-breath { opacity: .45; transition: opacity .4s ease; }
 .is-paused .r-cd { animation: blink 1.6s ease-in-out infinite; }
 @keyframes blink { 50% { opacity: .35; } }
 .r-sub {
@@ -501,7 +564,7 @@ button { font: inherit; color: inherit; }
   .twinkle-a, .twinkle-b { animation: none; }
   .tile { transition: none; }
   .r-kin .c, .r-cta::after, .sky-rays i, .r-ring.is-ending, .is-paused .r-cd,
-  .check input:checked + .box { animation: none; }
+  .check input:checked + .box, .fig * { animation: none; }
   .r-sheet { transition: opacity .2s ease; transform: none; opacity: 0; pointer-events: none; }
   .sheet-open .r-sheet { opacity: 1; pointer-events: auto; }
 }

@@ -20,15 +20,23 @@ export function buildPlan(prefs = getPrefs()) {
   return [
     { id: 'lit', label: 'Lit + aérer', dur: 60, cue: 'Fais le lit, ouvre la fenêtre.' },
     { id: 'eau', label: 'Eau + se débarbouiller', dur: 60, cue: 'Un grand verre. Eau froide sur le visage.' },
+    // fig : silhouette animée affichée dans l'anneau (voir matin-figures.js).
     {
-      id: 'qigong', label: 'Qi gong', dur: 120,
+      id: 'qigong', label: 'Qi gong', dur: 90,
       subs: [
-        { t: 30, name: 'Secouement', cue: 'Sautille. Bras et épaules relâchés.' },
-        { t: 45, name: 'Rotations', cue: 'swing' },
-        { t: 45, name: 'Soutenir le ciel', cue: 'breath' },
+        { t: 30, name: 'Sautillements', cue: 'Sautille sur place. Épaules et bras relâchés.', fig: 'bounce' },
+        { t: 30, name: 'Rotations', cue: 'swing', fig: 'swing' },
+        { t: 30, name: 'Paumes au ciel', cue: 'breath', fig: 'stretch' },
       ],
     },
-    { id: 'exos', label: 'Exos courts', dur: 180, cue: 'Scapula ou gainage tant que le coude n’est pas validé.' },
+    {
+      id: 'exos', label: 'Exos courts', dur: 180,
+      subs: [
+        { t: 60, name: '15 pompes', cue: '15 pompes propres, à ton rythme.', fig: 'pushup' },
+        { t: 45, name: 'Planche lean', cue: 'Bras tendus, épaules en avant des mains. Gaine.', fig: 'lean' },
+        { t: 75, name: 'Combo ou hold', cue: 'Une tentative de combo ou de hold. Qualité avant tout.', fig: 'hold' },
+      ],
+    },
     prefs.jeune
       ? { id: 'cafe', label: 'Café', dur: 420, cue: 'Jour de jeûne : café seul, tranquille.' }
       : { id: 'cafe', label: 'Café et petit-déj', dur: 600, cue: 'Les deux en même temps.' },

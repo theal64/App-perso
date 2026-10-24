@@ -12,10 +12,12 @@ import {
   PREVIEW_SPEED, buildPlan, departFor, fmtCD, fmtHM, getPrefs, planText,
   previewStart, savePrefs, stepCue, stepDur,
 } from './matin-plan.js';
+import { FIGURES, FIGURE_PERIOD } from './matin-figures.js';
 
 const HISTORY_KEY = 'matin:history';
 const RUN_KEY = 'matin:run';
 const FEATURED_UNTIL_HOUR = 11;
+const DUSK_FROM = 4; // à partir de 4 étapes, l'horizon rosit : boutons plus opaques
 const DAY_TEXT_FROM = 6; // à partir de 6 étapes, le ciel est clair : texte foncé
 
 const ICON_CLOSE = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
@@ -273,6 +275,8 @@ function open(screen, { close }) {
   function updateSky({ instant = false } = {}) {
     const done = doneIds(run).length;
     sky.set(done, plan.length, { instant });
+    // Trois ambiances pour garder textes et boutons lisibles : nuit, aube (rose-orange), jour.
+    screen.classList.toggle('is-dusk', done >= DUSK_FROM && done < DAY_TEXT_FROM);
     screen.classList.toggle('is-day', done >= DAY_TEXT_FROM);
   }
 
@@ -370,6 +374,7 @@ function open(screen, { close }) {
           </svg>
           <div class="r-mid">
             <span class="r-sub"></span>
+            <div class="r-fig"></div>
             <span class="r-cd"></span>
           </div>
         </div>
@@ -387,7 +392,7 @@ function open(screen, { close }) {
       clock: $('.r-clock'), pill: $('.r-pill'), kin: $('.r-kin'), breath: $('.r-breath'),
       prg: $('.prg'), ticks: [...view.querySelectorAll('.tk')], sub: $('.r-sub'), cd: $('.r-cd'),
       cue: $('.r-cue'), next: $('.r-next'), pause: $('[data-action="pause"]'),
-      ring: $('.r-ring'), ripple: $('.r-ripple'),
+      ring: $('.r-ring'), ripple: $('.r-ripple'), fig: $('.r-fig'),
     };
     litTicks = -1;
     tag.hidden = run.speed === 1;
@@ -431,6 +436,8 @@ function open(screen, { close }) {
     sub = -1;
     ui.kin.style.setProperty('--base', exit && exitTitle() ? '260ms' : '0ms');
     kinetic(ui.kin, step.label);
+    ui.ring.classList.toggle('has-fig', !!step.subs);
+    ui.fig.replaceChildren();
     if (exit && !reduceMotion()) {
       [ui.cue, ui.next].forEach((el, i) =>
         el.animate(
@@ -582,6 +589,16 @@ function open(screen, { close }) {
         sub = si;
         ui.sub.textContent = `${si + 1}/${step.subs.length} · ${s.name}`;
         if (si > 0 && prefs.sound) chime(784, 1046);
+        // Silhouette du mouvement, calée sur le rythme du texte (Gauche / Droite, Inspire / Expire).
+        ui.fig.innerHTML = FIGURES[s.fig] || '';
+        const period = FIGURE_PERIOD[s.fig];
+        if (period) ui.fig.style.setProperty('--sync', `-${(rt % period).toFixed(2)}s`);
+        if (!reduceMotion()) {
+          ui.fig.animate(
+            { opacity: [0, 1], transform: ['scale(.85)', 'none'] },
+            { duration: 500, easing: EASE_OUT }
+          );
+        }
       }
       if (s.cue === 'swing') {
         ui.cue.className = 'r-cue big';
@@ -596,7 +613,7 @@ function open(screen, { close }) {
       } else {
         ui.cue.className = 'r-cue';
         ui.cue.textContent = s.cue;
-        scale = 0.8 + Math.abs(Math.sin(rt * Math.PI * 2.2)) * 0.12;
+        if (s.fig === 'bounce') scale = 0.8 + Math.abs(Math.sin(rt * Math.PI * 2.2)) * 0.12;
       }
     }
     if (!reduceMotion()) ui.breath.style.transform = `scale(${scale})`;
