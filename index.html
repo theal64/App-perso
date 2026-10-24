@@ -18,18 +18,20 @@
   <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-  <div class="home-sky" aria-hidden="true"><span></span><span class="twinkle-a"></span></div>
+  <div class="home-sky" id="home-sky" aria-hidden="true"></div>
 
   <div id="home" class="home">
     <header class="home-top">
-      <div>
-        <p class="date" id="home-date"></p>
-        <h1 class="hello">Bonjour Théo</h1>
-      </div>
+      <p class="date" id="home-date"></p>
       <p class="streak-chip" id="home-streak"></p>
     </header>
 
-    <section id="featured" class="featured-slot"></section>
+    <section class="hero">
+      <h1 class="hello" id="home-hello"></h1>
+      <p class="clock" id="home-clock" aria-live="off"></p>
+      <p class="now" id="home-now"><span class="now-phase" id="home-phase"></span><span class="now-hint" id="home-hint"></span></p>
+    </section>
+
     <section id="grid" class="grid"></section>
   </div>
 

@@ -35,53 +35,101 @@ html.screen-open body { overflow: hidden; }
 
 button { font: inherit; color: inherit; }
 
-/* ---------- Accueil ---------- */
+/* ---------- Accueil : ciel vivant (js/home-sky.js) ---------- */
 
-/* Ciel calme derrière l'accueil : étoiles fixes et horizon de planète au liseré rouge. */
-.home-sky {
-  position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
-  background: linear-gradient(180deg, #01030c 0%, #060a1e 70%, #1a0710 100%);
+.home-sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; background: #02040c; }
+.home-sky > * { position: absolute; }
+.hs-base { inset: 0; }
+.hs-stars {
+  inset: -12px; transition: opacity 2s ease, transform .8s var(--ease-ios);
+  -webkit-mask-image: linear-gradient(#000 40%, transparent 85%); mask-image: linear-gradient(#000 40%, transparent 85%);
 }
-.home-sky span { position: absolute; inset: 0; }
-.home-sky .twinkle-a { animation: twinkle 5s ease-in-out infinite; }
-.home-sky::after {
-  content: ""; position: absolute; left: 50%; bottom: 0; width: 240vmax; height: 240vmax; border-radius: 50%;
-  transform: translate(-50%, 95%); background: #03050d;
-  box-shadow: 0 -2px 0 rgba(255, 96, 80, .75), 0 -24px 80px rgba(255, 70, 50, .28), 0 -2px 0 2px rgba(140, 195, 255, .2);
-}
+.hs-stars span { position: absolute; inset: 0; }
+.hs-stars .twinkle-a { animation: twinkle 5s ease-in-out infinite; }
+@keyframes twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
 
+/* Voiles de lumière qui dérivent (nuages diffus le jour, brume la nuit) */
+.hs-haze { inset: -40px; opacity: .35; transition: opacity 2s ease, transform 1s var(--ease-ios); }
+[data-bright="1"] .hs-haze { opacity: .85; }
+.hs-haze i { position: absolute; border-radius: 50%; will-change: transform; }
+.hs-haze i:nth-child(1) {
+  width: 120%; height: 38%; left: -30%; top: 30%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, .22), transparent);
+  animation: haze-a 38s ease-in-out infinite alternate;
+}
+.hs-haze i:nth-child(2) {
+  width: 90%; height: 30%; right: -35%; top: 52%;
+  background: radial-gradient(closest-side, rgba(220, 235, 255, .18), transparent);
+  animation: haze-b 46s ease-in-out infinite alternate;
+}
+@keyframes haze-a { to { transform: translate(28%, -6%) scale(1.15); } }
+@keyframes haze-b { to { transform: translate(-30%, 8%) scale(.9); } }
+
+/* Lueur d'horizon (couleur selon l'heure) */
+.hs-glow { left: -20%; right: -20%; bottom: 0; height: 65%; transition: opacity 2s ease; }
+
+/* Arc du jour et astre */
+.hs-arc { inset: 0; width: 100%; height: 100%; overflow: visible; }
+.hs-arc path { fill: none; stroke-linecap: round; }
+.hs-arc-path { stroke: rgba(234, 244, 255, .16); stroke-width: 1; }
+.hs-arc-done { stroke: rgba(234, 244, 255, .5); stroke-width: 1.5; }
+.hs-body { left: 0; top: 0; width: 0; height: 0; will-change: transform; }
+.hs-disc, .hs-halo { position: absolute; border-radius: 50%; }
+.hs-disc {
+  width: 26px; height: 26px; left: -13px; top: -13px;
+  background: radial-gradient(circle at 45% 40%, #fffdf4, #ffe2a6 55%, #ffb46a);
+  box-shadow: 0 0 18px 6px rgba(255, 214, 150, .6);
+}
+.hs-halo {
+  width: 160px; height: 160px; left: -80px; top: -80px;
+  background: radial-gradient(circle, rgba(255, 220, 160, .45), rgba(255, 190, 120, .12) 40%, transparent 70%);
+  animation: halo 5s ease-in-out infinite alternate;
+}
+@keyframes halo { from { transform: scale(.85); opacity: .7; } to { transform: scale(1.1); opacity: 1; } }
+[data-body="moon"] .hs-disc {
+  width: 22px; height: 22px; left: -11px; top: -11px;
+  background: transparent; box-shadow: inset 7px -4px 0 0 #e8eefc, 0 0 16px 2px rgba(200, 215, 255, .15);
+}
+[data-body="moon"] .hs-halo { background: radial-gradient(circle, rgba(190, 210, 255, .18), transparent 65%); }
+
+/* Mise en page iPhone : en-tête en haut, heure au milieu, boutons dans la zone du pouce */
 .home {
-  max-width: 560px;
-  margin: 0 auto;
+  max-width: 560px; min-height: 100dvh; margin: 0 auto;
+  display: flex; flex-direction: column;
   padding:
-    calc(env(safe-area-inset-top) + 20px)
+    calc(env(safe-area-inset-top) + 16px)
     calc(env(safe-area-inset-right) + 16px)
-    calc(env(safe-area-inset-bottom) + 28px)
+    calc(env(safe-area-inset-bottom) + 22px)
     calc(env(safe-area-inset-left) + 16px);
   transform-origin: 50% 30%;
+  text-shadow: 0 1px 18px rgba(2, 6, 20, .35);
 }
+.home-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.date { margin: 0; color: var(--text); opacity: .8; font: 400 13px/1 var(--f-mono); text-transform: capitalize; }
 
-.home-top {
-  display: flex; align-items: flex-end; justify-content: space-between; gap: 12px;
-  margin: 8px 0 18px;
-}
-.date { margin: 0; color: var(--muted); font: 400 13px/1 var(--f-mono); text-transform: capitalize; }
-.hello { margin: 8px 0 0; font: 800 clamp(36px, 10vw, 60px)/.95 var(--f-display); letter-spacing: -.035em; white-space: nowrap; }
-
-/* Série de jours : compteur en verre (chiffre 30/800, libellé mono) */
 .streak-chip {
-  flex: none; margin: 0 0 2px; width: 84px; padding: 10px 8px; text-align: center;
-  background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  margin: 0; display: flex; align-items: baseline; gap: 6px; padding: 8px 12px; border-radius: 999px;
+  background: rgba(6, 16, 44, .4); border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); text-shadow: none;
 }
-.streak-chip strong {
-  display: block; font: 800 30px/1 var(--f-display); letter-spacing: -.02em; color: var(--text);
+.streak-chip strong { font: 800 16px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.streak-chip span { color: var(--muted); font: 500 10px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; }
+
+.hero { margin-top: auto; padding-bottom: 28px; }
+.hello { margin: 0 0 2px; font: 700 clamp(22px, 6.4vw, 30px)/1.1 var(--f-display); letter-spacing: -.02em; }
+.hello .w { display: inline-block; white-space: nowrap; }
+.hello .c { display: inline-block; }
+.clock {
+  margin: 0; display: flex; font: 800 clamp(96px, 30vw, 150px)/.92 var(--f-display); letter-spacing: -.055em;
   font-variant-numeric: tabular-nums;
 }
-.streak-chip span {
-  display: block; margin-top: 6px; color: var(--muted);
-  font: 500 10px/1.2 var(--f-mono); letter-spacing: .12em; text-transform: uppercase;
-}
+.clock .d { display: inline-grid; overflow: hidden; padding: .04em 0 .06em; }
+.clock .d i { grid-area: 1 / 1; font-style: normal; }
+.now { margin: 10px 0 0; display: flex; flex-wrap: wrap; gap: 8px; font: 500 12px/1.3 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; }
+.now-phase { color: var(--accent); }
+.home-sky[data-bright="1"] ~ .home .now-phase { color: #fff; } /* ciel clair : le bleu se perdrait */
+.now-hint { color: var(--text); opacity: .85; }
+.now-hint:not(:empty)::before { content: "·"; margin-right: 8px; color: var(--muted); }
 
 .tile {
   appearance: none; -webkit-appearance: none;
@@ -89,143 +137,6 @@ button { font: inherit; color: inherit; }
   transition: transform .2s var(--ease-ios);
 }
 .tile:active { transform: scale(.97); }
-
-.featured-slot { margin-bottom: 12px; }
-.featured-slot:empty { display: none; }
-
-/* Carte vedette : aperçu du ciel nocturne */
-.feat { position: relative; height: 236px; border-radius: 24px; color: #fff; background: none; }
-.feat-sky { position: absolute; inset: 0; z-index: -1; }
-.feat-stars, .feat-stars span { position: absolute; inset: 0; }
-.feat-glow {
-  position: absolute; left: -20%; right: -20%; bottom: -30%; height: 80%;
-  background: radial-gradient(ellipse 50% 60% at 50% 100%, rgba(255, 170, 120, .85), rgba(255, 120, 130, .3) 45%, transparent 75%);
-}
-/* ---------- Carte vedette "première lumière" ---------- */
-.aur-inner {
-  position: absolute; inset: 0; border-radius: 24px; overflow: hidden; isolation: isolate;
-  background: #060a1a; box-shadow: 0 20px 44px -18px rgba(16, 20, 52, .75);
-  transition: transform .6s var(--ease-ios); will-change: transform;
-  font-family: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
-}
-.is-touch .aur-inner { transition: transform .12s ease-out; }
-
-.aur-stars, .aur-stars span { position: absolute; inset: 0; }
-.aur-stars .drift { inset: -12%; animation: drift 46s linear infinite alternate; }
-@keyframes drift { to { transform: translate(-7%, 4%); } }
-
-/* Aurore : trois nappes de couleur qui ondulent lentement */
-.aurora { position: absolute; inset: 0; }
-.aurora i { position: absolute; width: 75%; height: 70%; border-radius: 50%; will-change: transform; }
-.aurora i:nth-child(1) {
-  left: -15%; top: -20%; background: radial-gradient(closest-side, rgba(90, 210, 255, .3), transparent);
-  animation: aur-a 13s ease-in-out infinite alternate;
-}
-.aurora i:nth-child(2) {
-  right: -20%; top: -5%; background: radial-gradient(closest-side, rgba(150, 110, 255, .3), transparent);
-  animation: aur-b 17s ease-in-out infinite alternate;
-}
-.aurora i:nth-child(3) {
-  left: 15%; top: 20%; background: radial-gradient(closest-side, rgba(255, 110, 150, .16), transparent);
-  animation: aur-c 15s ease-in-out infinite alternate;
-}
-@keyframes aur-a { to { transform: translate(35%, 25%) scale(1.25) rotate(20deg); } }
-@keyframes aur-b { to { transform: translate(-30%, 15%) scale(.85) rotate(-15deg); } }
-@keyframes aur-c { to { transform: translate(-20%, -20%) scale(1.3); } }
-
-/* Lueur d'aube (allumage) */
-.aur-dawn {
-  position: absolute; inset: 0; opacity: 0; pointer-events: none;
-  background: radial-gradient(120% 75% at 50% 100%, rgba(255, 176, 120, .9), rgba(255, 110, 140, .35) 42%, transparent 72%);
-}
-
-/* Horizon de planète, liseré rouge qui respire, éclair d'horizon */
-.aur-horizon {
-  position: absolute; left: 50%; top: 89%; width: 280%; aspect-ratio: 1; transform: translateX(-50%);
-  border-radius: 50%; background: #03050d; pointer-events: none;
-  box-shadow: 0 -2px 0 rgba(255, 96, 80, .8), 0 -2px 0 2px rgba(140, 195, 255, .2);
-}
-.aur-horizon::before {
-  content: ""; position: absolute; inset: 0; border-radius: 50%;
-  box-shadow: 0 -26px 90px rgba(255, 80, 60, .45);
-  animation: breathe 4.5s ease-in-out infinite alternate;
-}
-@keyframes breathe { from { opacity: .35; } to { opacity: 1; } }
-.aur-flare {
-  position: absolute; left: 50%; top: 0; width: 36%; height: 3px; margin: -2px 0 0 -18%; border-radius: 3px;
-  background: linear-gradient(90deg, transparent, #ffe2b8 28%, #fff 50%, #ffe2b8 72%, transparent);
-  box-shadow: 0 0 22px 6px rgba(255, 190, 120, .7);
-  opacity: 0; transform: scaleX(0);
-}
-
-/* Texte */
-.aur-body { position: absolute; left: 20px; right: 118px; bottom: 46px; display: flex; flex-direction: column; gap: 8px; }
-.aur-eyebrow {
-  color: #8fcaff; font: 500 11px/1 "IBM Plex Mono", ui-monospace, Menlo, monospace;
-  letter-spacing: .14em; text-transform: uppercase;
-}
-.aur-title { margin: 0; font-size: 31px; font-weight: 800; line-height: .98; letter-spacing: -.03em; color: #fff; }
-.aur-title .w { display: inline-block; white-space: nowrap; }
-.aur-title .ch { display: inline-block; }
-.aur-sub { color: #a9bfe0; font: 400 12px/1.2 "IBM Plex Mono", ui-monospace, Menlo, monospace; }
-
-/* Orbe-soleil : pulsations, anneau de progression, orbite */
-.aur-orb {
-  position: absolute; right: 18px; bottom: 50px; width: 88px; height: 88px; display: grid; place-items: center;
-  --ico-off: #a9bfe0; --ico-on: #ffd9a0; --ico-hz: #eaf4ff;
-}
-.aur-orb .ibox {
-  position: absolute; inset: 13px; width: auto; height: auto; border-radius: 50%;
-  background: radial-gradient(circle at 50% 75%, rgba(255, 170, 110, .28), rgba(6, 16, 44, .65) 70%);
-  border: 1px solid rgba(234, 244, 255, .2);
-}
-.aur-orb .ico { width: 34px; height: 34px; }
-.aur-ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transform: rotate(-90deg); }
-.aur-ring circle { fill: none; }
-.aur-ring .trk { stroke: rgba(234, 244, 255, .14); stroke-width: 2; }
-.aur-ring .prg {
-  stroke: #8fcaff; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1;
-  filter: drop-shadow(0 0 4px #8fcaff);
-}
-.aur-ring .orbit {
-  stroke: rgba(234, 244, 255, .4); stroke-width: 1; stroke-dasharray: 1 6;
-  transform-box: view-box; transform-origin: 50px 50px; animation: spin 24s linear infinite;
-}
-.pulse {
-  position: absolute; inset: 8px; border-radius: 50%; opacity: 0;
-  border: 1.5px solid rgba(255, 214, 166, .65);
-  animation: pulse 2.8s cubic-bezier(.2, .6, .3, 1) infinite;
-}
-.pulse.p2 { animation-delay: 1.4s; }
-@keyframes pulse { 0% { transform: scale(.9); opacity: .75; } 100% { transform: scale(1.85); opacity: 0; } }
-.aur-shock {
-  position: absolute; left: 50%; top: 50%; width: 760px; height: 760px; border-radius: 50%;
-  transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none;
-  background: radial-gradient(circle, transparent 54%, rgba(255, 214, 166, .55) 61%, rgba(143, 202, 255, .3) 65%, transparent 70%);
-}
-.aur-p {
-  position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%;
-  background: #fff7e8; box-shadow: 0 0 8px 2px rgba(255, 200, 140, .8); pointer-events: none;
-}
-
-/* Reflet qui suit le doigt */
-.aur-glare {
-  position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .4s;
-  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, .22), transparent 48%);
-}
-.is-touch .aur-glare { opacity: 1; }
-
-/* Liseré de lumière qui fait le tour de la carte */
-.aur-border {
-  position: absolute; inset: 0; border-radius: 24px; padding: 1.5px; overflow: hidden; pointer-events: none;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
-}
-.aur-border::before {
-  content: ""; position: absolute; left: 50%; top: 50%; width: 200%; aspect-ratio: 1; margin: -100% 0 0 -100%;
-  background: conic-gradient(from 0deg, transparent 0 60%, rgba(143, 202, 255, .9) 70%, #fff 74%, rgba(255, 150, 120, .9) 78%, transparent 88%);
-  animation: spin 6s linear infinite;
-}
 
 /* Icône soleil sur l'horizon : couchée par défaut, levée avec .ico-on */
 .tile-row { --ico-off: var(--muted); --ico-on: var(--accent); --ico-hz: var(--text); }
@@ -277,8 +188,23 @@ button { font: inherit; color: inherit; }
   width: 30px; height: 30px; fill: none; stroke: var(--muted);
   stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
 }
-.tile-row.is-soon { opacity: .55; }
+.tile-row { position: relative; text-shadow: none; }
 .tile-row.is-soon .t1 { color: var(--muted); }
+.tile-row.is-soon .ibox { opacity: .7; }
+
+/* « Maintenant » : le bouton pertinent à cette heure-ci */
+.tile-row.is-now { border-color: rgba(143, 202, 255, .5); background: rgba(6, 16, 44, .62); }
+.tile-row.is-now .t1 { color: var(--text); }
+.now-tag {
+  position: absolute; top: -9px; right: 18px; padding: 4px 8px; border-radius: 999px;
+  background: var(--accent); color: var(--bg); font: 500 10px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase;
+}
+.now-sheen { position: absolute; inset: 0; border-radius: 22px; overflow: hidden; pointer-events: none; }
+.now-sheen::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(143, 202, 255, .22) 50%, transparent 65%);
+  transform: translateX(-100%); animation: sheen 4.5s ease-in-out infinite;
+}
 
 .badge {
   flex: none; padding: 5px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted);
@@ -320,75 +246,7 @@ button { font: inherit; color: inherit; }
 .endsky canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .endsky .es-gl { opacity: 0; }
 
-/* ---------- Ciel de l'aube (aperçu de la carte d'accueil) ---------- */
-
-.sky { position: absolute; inset: 0; overflow: hidden; background: #02040b; }
-.sky > * { position: absolute; pointer-events: none; }
-.sky-layer {
-  inset: 0; opacity: 0;
-  transition: opacity var(--sky-dur) ease-in-out;
-  will-change: opacity;
-}
-.sky-stars {
-  inset: 0;
-  transition: opacity var(--sky-dur) ease-in-out;
-  -webkit-mask-image: linear-gradient(#000 45%, transparent 90%);
-  mask-image: linear-gradient(#000 45%, transparent 90%);
-}
-.sky-stars canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-.twinkle-a { animation: twinkle 3.8s ease-in-out infinite; }
-.twinkle-b { animation: twinkle 5.7s ease-in-out -2.1s infinite; }
-@keyframes twinkle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: .25; }
-}
-.sky-glow {
-  left: -30%; right: -30%; bottom: -10%; height: 75%; opacity: 0;
-  background: radial-gradient(ellipse 50% 60% at 50% 100%, rgba(255, 172, 120, .9), rgba(255, 120, 130, .35) 45%, transparent 75%);
-  transform-origin: 50% 100%;
-  transition: opacity var(--sky-dur) ease-in-out, transform var(--sky-dur) ease-in-out;
-  will-change: opacity, transform;
-}
-.sky { --sun-size: min(40vw, 170px); --sun-shift: 2.6; }
-.sky-sun {
-  left: 50%; bottom: 16vh; width: var(--sun-size); height: var(--sun-size); margin-left: calc(var(--sun-size) / -2);
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 45%, #fffaf0 0%, #ffe3b0 40%, #f7b273 75%, #ec955a 100%);
-  box-shadow: 0 0 60px 20px rgba(255, 196, 130, .5), 0 0 160px 70px rgba(255, 170, 110, .28);
-  transform: translateY(calc(var(--sun-shift) * 100%));
-  transition: transform var(--sky-dur) cubic-bezier(.45, 0, .25, 1);
-  will-change: transform;
-}
-/* Rayons centrés sur le soleil, qui tournent très lentement */
-.sky-rays {
-  left: 50%; width: 150vmax; height: 150vmax; margin-left: -75vmax;
-  bottom: calc(16vh + var(--sun-size) / 2 - 75vmax);
-  opacity: 0;
-  transform: translateY(calc(var(--sun-shift) * var(--sun-size)));
-  transition: opacity var(--sky-dur) ease-in-out, transform var(--sky-dur) cubic-bezier(.45, 0, .25, 1);
-  will-change: transform, opacity;
-}
-.sky-rays i {
-  position: absolute; inset: 0;
-  background: repeating-conic-gradient(from 0deg, rgba(255, 214, 160, .38) 0deg 3.5deg, transparent 3.5deg 15deg);
-  -webkit-mask-image: radial-gradient(circle, #000 4%, rgba(0, 0, 0, .45) 18%, transparent 46%);
-  mask-image: radial-gradient(circle, #000 4%, rgba(0, 0, 0, .45) 18%, transparent 46%);
-  animation: spin 120s linear infinite;
-  will-change: transform;
-}
 @keyframes spin { to { transform: rotate(360deg); } }
-/* Étoiles filantes (dans le calque des étoiles : elles s'effacent avec l'aube) */
-.sky-meteors { position: absolute; inset: 0; overflow: hidden; }
-.meteor {
-  position: absolute; width: 150px; height: 1.6px; border-radius: 2px; opacity: 0;
-  background: linear-gradient(90deg, rgba(255, 255, 255, .95), rgba(190, 215, 255, .4) 30%, transparent);
-  transform-origin: 0 50%;
-}
-.meteor::before {
-  content: ""; position: absolute; left: -3px; top: -3px; width: 7px; height: 7px; border-radius: 50%;
-  background: radial-gradient(circle, #fff, rgba(255, 255, 255, 0) 70%);
-}
-.sky-instant, .sky-instant * { transition: none !important; }
 
 /* ---------- Routine (Mode matin) ---------- */
 
@@ -684,10 +542,8 @@ button { font: inherit; color: inherit; }
   :root { --sky-dur: .8s; }
   .twinkle-a, .twinkle-b { animation: none; }
   .tile { transition: none; }
-  .r-kin .c, .r-cta::after, .sky-rays i, .r-ring.is-ending, .is-paused .r-cd,
-  .check input:checked + .box, .fig *, .aur-stars .drift, .aurora i, .aur-horizon::before,
-  .aur-ring .orbit, .pulse, .aur-border::before { animation: none; }
-  .pulse { display: none; }
+  .r-kin .c, .r-cta::after, .r-ring.is-ending, .is-paused .r-cd,
+  .check input:checked + .box, .fig *, .hs-haze i, .hs-halo, .now-sheen::before { animation: none; }
   .r-sheet { transition: opacity .2s ease; transform: none; opacity: 0; pointer-events: none; }
   .sheet-open .r-sheet { opacity: 1; pointer-events: auto; }
 }

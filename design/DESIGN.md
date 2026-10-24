@@ -139,6 +139,18 @@ Chaque changement est lissé par une interpolation exponentielle (constante de t
 
 **Mise en œuvre native (SwiftUI) :** intégrer le fond (`js/endsky.js`) dans une `WKWebView` transparente, placée derrière l'interface, et exposer `setSky(awake, dawn, step)` appelée depuis Swift via `evaluateJavaScript`. Ne pas réécrire le fond en Metal pour une app perso : le gain ne justifie pas le coût.
 
+### 6.2 Accueil : ciel vivant (`js/home-sky.js`)
+
+L'accueil sert le matin au réveil comme l'après-midi avant le sport. Son fond suit donc l'heure réelle : c'est la seule exception au « sombre uniquement », voulue par Théo.
+
+- **Ciel** interpolé à la minute entre des repères horaires : nuit, aube vers 6 h, matin, plein jour, heure dorée vers 17 h 45, crépuscule et nuit. Les étoiles apparaissent la nuit, avec une lueur d'horizon et des voiles de lumière qui dérivent.
+- **Arc du jour** : il porte le soleil de 7 h à 19 h et la lune le reste du temps. La portion déjà parcourue est plus claire.
+- **Contenu** : date et série de jours en haut ; au milieu, le salut selon l'heure (Bonjour, Bon après-midi, Bonsoir), une horloge géante dont les chiffres défilent, puis la phase du jour et une ligne contextuelle ; dans la zone du pouce, les boutons Routine du matin et Séance de sport.
+- **« Maintenant »** : le bouton pertinent est mis en avant (`isFeatured`) avec une étiquette et un reflet qui passe en boucle. C'est la routine de 4 h à 11 h tant qu'elle n'est pas faite, et la séance de 12 h à 20 h.
+- **Entrée** (1,8 s, une fois par ouverture) : le ciel se lève, l'arc se trace, l'astre glisse de l'horizon jusqu'à l'heure, le salut monte lettre par lettre, les chiffres arrivent avec un ressort, puis les boutons (ressort `cubic-bezier(.34,1.56,.64,1)`).
+- **Parallaxe** : les étoiles et les voiles suivent légèrement le doigt.
+- **Aperçu** : `?heure=17:30` dans l'adresse affiche l'accueil à une autre heure.
+
 ## 7. Composants
 
 | Composant | Spec | Prototype |
