@@ -1,6 +1,6 @@
 // Service worker : met l'app en cache pour qu'elle marche hors ligne.
 // Pense à incrémenter VERSION à chaque modification des fichiers ci-dessous.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = `routine-${VERSION}`;
 
 const ASSETS = [
@@ -14,6 +14,8 @@ const ASSETS = [
   './js/theme.js',
   './js/sky.js',
   './js/transition.js',
+  './js/chime.js',
+  './js/tabs/matin-plan.js',
   './js/tabs/index.js',
   './js/tabs/matin.js',
   './js/tabs/journee.js',
@@ -40,10 +42,29 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
+
 // Réseau d'abord (pour avoir les mises à jour), cache en secours hors ligne.
+// Les polices Google sont gardées en cache pour marcher hors ligne.
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+  const url = new URL(request.url);
+  if (request.method !== 'GET') return;
+  if (FONT_HOSTS.includes(url.hostname)) {
+    event.respondWith(
+      caches.match(request).then(
+        (cached) =>
+          cached ||
+          fetch(request).then((response) => {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, copy));
+            return response;
+          })
+      )
+    );
+    return;
+  }
+  if (url.origin !== self.location.origin) return;
 
   event.respondWith(
     fetch(request)
