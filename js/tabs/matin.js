@@ -23,6 +23,9 @@ const ICON_LIST = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" s
 
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+// TEMPORAIRE (tests) : remet la routine du jour à zéro. À retirer ensuite.
+const RESET_BUTTON = '<button type="button" class="r-reset" data-action="reset">↺ Réinitialiser aujourd’hui (test)</button>';
+
 // ---------- Données ----------
 
 function getHistory() {
@@ -254,6 +257,7 @@ function open(screen, { close }) {
         <button type="button" class="r-ghost" data-action="preview">Voir en accéléré (×${PREVIEW_SPEED})</button>
       </div>
       <p class="r-rule">Lance, pose l’écran, ne scrolle pas. Le téléphone reste à la maison pendant la balade.</p>
+      ${RESET_BUTTON}
     `;
   }
 
@@ -497,6 +501,7 @@ function open(screen, { close }) {
       <p class="r-motto">Ne jamais rater deux fois.</p>
       ${wasPreview ? '' : `<p class="r-streak">${streakText(getStreak())}</p>`}
       <button type="button" class="r-cta" data-action="${wasPreview ? 'end-preview' : 'close'}">${wasPreview ? 'Retour' : 'Retour à l’accueil'}</button>
+      ${wasPreview ? '' : RESET_BUTTON}
     `;
     kinetic(view.querySelector('.r-kin'), timed ? 'Départ' : 'Routine complète');
     if (timed && prefs.sound) {
@@ -561,6 +566,12 @@ function open(screen, { close }) {
     else if (action === 'preview') startRun(PREVIEW_SPEED);
     else if (action === 'stop' || action === 'end-preview') stopRun();
     else if (action === 'pause') togglePause();
+    else if (action === 'reset' && confirm('Remettre la routine d’aujourd’hui à zéro ?')) {
+      const history = getHistory();
+      delete history[dateKey()];
+      save(HISTORY_KEY, history);
+      stopRun();
+    }
     else if (action === 'next') {
       completeStep(run.stepId);
       enterStep(clockNow(run));

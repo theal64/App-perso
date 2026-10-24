@@ -373,6 +373,13 @@ button { font: inherit; color: inherit; }
 .r-streak { margin: 0; font: 400 13px/1 var(--f-mono); color: var(--r-muted); }
 .r-end .r-cta { width: 100%; margin-top: auto; }
 
+/* TEMPORAIRE (tests) */
+.r-reset {
+  align-self: center; margin-top: 10px; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+  border: 1px dashed var(--r-line); background: transparent; color: var(--r-muted);
+  font: 500 11px/1 var(--f-mono); letter-spacing: .04em;
+}
+
 /* Liste complète (feuille du bas) */
 .r-backdrop {
   position: absolute; inset: 0; background: rgba(0, 0, 0, .3);
