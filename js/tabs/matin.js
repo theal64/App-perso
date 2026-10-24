@@ -341,7 +341,6 @@ function open(screen, { close }) {
       </div>
       <div class="r-go">
         <button type="button" class="r-cta" data-action="start">${remaining.length < plan.length ? 'Reprendre la routine' : 'Je suis levé'}</button>
-        <button type="button" class="r-ghost" data-action="preview">Voir en accéléré (×${PREVIEW_SPEED})</button>
       </div>
       <p class="r-rule">Lance, pose l’écran, ne scrolle pas. Le téléphone reste à la maison pendant la balade.</p>
       ${RESET_BUTTON}
@@ -745,7 +744,6 @@ function open(screen, { close }) {
     else if (action === 'pref') setPref(target.dataset.key, target.dataset.key === 'jeune' ? target.dataset.value === 'true' : target.dataset.value);
     else if (action === 'sound') setPref('sound', !prefs.sound);
     else if (action === 'start') startRun(1);
-    else if (action === 'preview') startRun(PREVIEW_SPEED);
     else if (action === 'stop' || action === 'end-preview') stopRun();
     else if (action === 'pause') togglePause();
     else if (action === 'reset') {
